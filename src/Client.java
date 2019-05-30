@@ -26,10 +26,14 @@ public class Client {
 	private int fileLength;
 	private static byte[] rrq = {0,1};
 	private static byte[] wrq = {0,2};
-	private static int mode;
+	private static int mode, simMode;
 	private int interHostPort = 23;
-	
+	private  boolean TIDSet = false;
 	public Client(){
+		if((int)simMode == 1) {
+			System.out.print("GEEEEEEEY");
+			interHostPort = 69;
+		}
 		com = new ComFunctions();
 		sendRecieveSocket = com.startSocket();
 		try {
@@ -73,6 +77,10 @@ public class Client {
 				if(!com.CheckAck(recievePacket, 0)) {
 					System.out.println("Not the correct ACK packet, resending");
 				}else {
+					if((int)simMode == 1 && !TIDSet) {
+						interHostPort = recievePacket.getPort();
+						TIDSet = true;
+					}
 					break reqLoop;
 				}
 			} catch (Exception e) {
@@ -108,6 +116,10 @@ public class Client {
 								messageReceived = recievePacket.getData();
 								if (mode == 1) {
 									com.verboseMode("Received Packet:", recievePacket, area);
+								}
+								if((int)simMode == 1 && !TIDSet) {
+									interHostPort = recievePacket.getPort();
+									TIDSet = true;
 								}
 								break sendLoop;
 							}else {
@@ -162,6 +174,7 @@ public class Client {
 					innerLoop:
 					while(true) {
 						sendRecieveSocket.receive(recievePacket);
+						
 						if (mode == 1) {
 							com.verboseMode("Received Packet:", recievePacket, area);
 						}
@@ -188,6 +201,10 @@ public class Client {
 								}
 								break outerloop;
 							}
+							if((int)simMode == 1 && !TIDSet) {
+								interHostPort = recievePacket.getPort();
+								TIDSet = true;
+							}
 							break innerLoop;
 						}else {
 							area.append("Wrong Packet Recieved, ignoring\n");
@@ -206,13 +223,15 @@ public class Client {
 	}
 	
 	public static void main(String[] args) {
-		Client client = new Client();
+		
 		Scanner sc = new Scanner(System.in);
 		System.out.println("Select Mode : Quiet [0], Verbose [1]");
 		mode = sc.nextInt();
+		System.out.println("Error Simulation mode? Yes [0], No [1]");
+		simMode= sc.nextInt();
+		System.out.println(simMode);
 		sc.close();
-		System.out.println(mode);
-
+		Client client = new Client();
 		//client.readFile("readTest.txt", "Ascii");
 		
 		client.writeFile("writeTest.txt", "Ascii");

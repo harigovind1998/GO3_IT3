@@ -229,27 +229,22 @@ public class IntermediateHost {
 		System.out.println("Select Mode : Quiet [0], Verbose [1]");
 		mode = sc1.nextInt();
 		
-		
-		Scanner sc2 = new Scanner(System.in);
 		System.out.println("Select Mode : Normal [0], Lost Packet [1], Delayed Packet [2], Duplicate Packet [3]");
-		simulation = sc2.nextInt();
+		simulation = sc1.nextInt();
 		
 		
 		if(simulation != 0) {
-			Scanner sc3 = new Scanner(System.in);
 			System.out.println("Which packet would you like to simulate the error");
-			packetNumber = sc3.nextInt();
+			packetNumber = sc1.nextInt();
 			
 			
 			if(simulation == 2) {
-				Scanner sc4 = new Scanner(System.in);
 				System.out.println("After how many milliseconds would you like to send the delayed one?");
-				packetDelay = sc4.nextInt();
+				packetDelay = sc1.nextInt();
 				
 			} else if (simulation == 3) {
-				Scanner sc5 = new Scanner(System.in);
 				System.out.println("How many times would you like to duplicate this packet?");
-				dup = sc5.nextInt();
+				dup = sc1.nextInt();
 				
 			}
 		}
