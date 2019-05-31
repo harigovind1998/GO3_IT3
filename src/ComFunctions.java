@@ -505,4 +505,51 @@ public class ComFunctions {
 		}
 		return type;
 	}
+	
+	public byte[] parseForError(DatagramPacket packet) {
+		byte[] data = packet.getData();
+		byte[] type = parsePacketType(data);
+		
+		if ((type[0] == 0 && type[1] == 1) || (type[0] == 0 && type[1] == 2)) {
+			byte[] mode = new byte[8];
+			int j = 0;
+			for(int i = data.length-2; i > 0; i--) {
+				if(mode[i] != (byte)0) {
+					mode[j] = data[i]; //puts mode as byte array but in reverse
+					j++;
+				} else {
+					break;
+				}
+			}
+			
+			//to undo the reverse
+			byte[] temp = mode;
+			for(int i = 0; i < 6; i++) {
+				mode[i] = temp[6-i];
+			}
+			
+			String modeAsString = new String(mode);
+			
+			//make all lower case
+			String modeToCompare = modeAsString.toLowerCase();
+			
+			//if it doesnt equal one of the modes
+			if(!(modeToCompare.equals("netascii") || modeToCompare.equals("octet"))) {
+				byte[] errCode = new byte[2];
+				errCode = intToByte(0);
+				return generateErrMessage(errCode, "Mode: " + modeAsString + " is unknown");
+			}
+			//if everything else is fine, return null
+			return  null;
+		} else if((type[0] == 0 && type[1] == 3) || (type[0] == 0 && type[1] == 4)) {
+			//do nothing for now; not sure if i need to check for errors in ack and data 
+			//other than if they are actually ack or data
+			return null;
+		}
+		//other operation codes
+		byte[] errCode = new byte[2];
+		errCode = intToByte(4);
+		String typeAsString = new String(type);
+		return generateErrMessage(errCode, "Type: " + typeAsString + " is an invalid TFTP operation");
+	}
 }
