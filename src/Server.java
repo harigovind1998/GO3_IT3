@@ -42,8 +42,8 @@ public class Server {
 		mode = sc.nextInt();
 		com = new ComFunctions();
 		recieveSocket = com.startSocket(69);
-		ServerExitListener exit = new ServerExitListener("Exit listener");
-		exit.start();
+		ServerExitListener exitListener = new ServerExitListener("Exit listener");
+		exitListener.start();
 	}
 
 	
