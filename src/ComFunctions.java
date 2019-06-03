@@ -17,10 +17,10 @@ public class ComFunctions {
 	public final int UNKNOWNLEN = 100;
 	
 	/**
-	 * Recieves a packet on the specified socket 
+	 * Receives a packet on the specified socket 
 	 * @param socket Socket to listen to
 	 * @param len length of the packet, either 4 or 100 bytes long
-	 * @return recieved DatagramPakcet
+	 * @return received DatagramPakcet
 	 */
 	public DatagramPacket recievePacket(DatagramSocket socket, int len) {
 		
@@ -36,7 +36,7 @@ public class ComFunctions {
 	}
 	
 	/**
-	 * Sends a packet through an initilized socket 
+	 * Sends a packet through an initialized socket 
 	 * @param packet packet to send
 	 * @param socket socket to send the packet through
 	 */
@@ -302,7 +302,6 @@ public class ComFunctions {
 	public void writeArrayIntoFile(byte[] bytesArray, Path path) {
 		try {
 			Files.write(path, bytesArray, StandardOpenOption.APPEND);
-			//Files.write();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -504,5 +503,35 @@ public class ComFunctions {
 			type[1] = 5;
 		}
 		return type;
+	}
+	
+	/**
+	 * Converts an encoded block to the physical block number given a RRQ or WRQ (for example, DATA3 of RRQ is converted to Block Number 6)
+	 * @param req 1 if RRQ, 2 if WRQ
+	 * @param type {8 - DATA or 9 - ACK, Block Num} for example for DATA3 => {8, 3}
+	 * @return Physical Block Number
+	 */
+	public int getBlockNum(int req, int[] type) {
+		int blocknum = 1;
+		switch(req) {
+			case 1: // RRQ
+				if (type[0] == 8) { // DATA
+					blocknum = type[1] + type[1] - 1;
+				}
+				if (type[0] == 9) { // ACK
+					blocknum = type[1] + type[1];
+				}
+				break;
+			case 2: // WRQ
+				if (type[0] == 8) { // DATA
+					blocknum = type[1] + type[1];
+				}
+				if (type[0] == 9) { // ACK
+					blocknum = 0;
+					blocknum = type[1] + type[1] - 1;
+				}
+				break;
+		}
+		return blocknum;
 	}
 }
