@@ -31,7 +31,6 @@ public class Client {
 	private  boolean TIDSet = false;
 	public Client(){
 		if((int)simMode == 1) {
-			System.out.print("GEEEEEEEY");
 			interHostPort = 69;
 		}
 		com = new ComFunctions();

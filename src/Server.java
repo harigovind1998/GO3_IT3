@@ -9,11 +9,12 @@ public class Server {
 	DatagramPacket recievePacket, errorPacket;
 	ComFunctions com;
 	int mode;
+	public static boolean serverRun = true;
 	/**
 	 * loops and keeps serving all the incoming requests
 	 */
 	public void serve() {
-		while(true) {
+		while(serverRun) {
 			recievePacket = com.recievePacket(recieveSocket, REQUEST_SIZE); 
 			//if the received packet is valid, passes the message onto a worker thread that takes care of all request until it is complete 
 			if (com.checkMessage(recievePacket.getData())) {
