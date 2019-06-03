@@ -27,6 +27,8 @@ public class IntermediateHost {
 		byte[] blockNum = null;
 		int packet = 0;
 		int tempPort = 0;
+		boolean serverNotSet = true;
+		boolean clientNotSet = true ;
 		//while(true) {
 			switch (simulation) {
 				case 0: 
@@ -36,21 +38,27 @@ public class IntermediateHost {
 					recievePacket = com.recievePacket(sendRecieveSocket, 516);
 					tempPort = recievePacket.getPort();
 					
-					if(packet == 0) {
+					if((packet == 0) && clientNotSet) {
+						clientNotSet = false;
 						clientPort = tempPort;
+					}else if(!(tempPort == clientPort)&&serverNotSet) {
+						serverNotSet  = false;
+						serverPort = tempPort;
+					}
+					
+					if(tempPort == clientPort) {
 						if(mode == 1) {
 							System.out.println(com.verboseMode("Recieve from client", recievePacket));
 						}
-					}else if(!(tempPort == clientPort)) {
-						serverPort = tempPort;
+					}else if(tempPort ==  serverPort) {
 						if(mode == 1) {
 							System.out.println(com.verboseMode("Recieve from server", recievePacket));
 						}
-					}else if(tempPort == clientPort) {
-						if(mode == 1) {
-							System.out.println(com.verboseMode("Recieve from client", recievePacket));
-						}
+					}else {
+						intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
+						rando.start();
 					}
+					
 					packet ++;
 					if(tempPort == clientPort) {
 						sendPacket = com.createPacket(recievePacket.getData(), serverPort);
@@ -74,21 +82,27 @@ public class IntermediateHost {
 						recievePacket = com.recievePacket(sendRecieveSocket, 516);
 						tempPort = recievePacket.getPort();
 						
-						if(packet == 0) {
+						if((packet == 0) && clientNotSet) {
+							clientNotSet = false;
 							clientPort = tempPort;
+						}else if(!(tempPort == clientPort)&&serverNotSet) {
+							serverNotSet  = false;
+							serverPort = tempPort;
+						}
+						
+						if(tempPort == clientPort) {
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieve from client", recievePacket));
 							}
-						}else if(!(tempPort == clientPort)) {
-							serverPort = tempPort;
+						}else if(tempPort ==  serverPort) {
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieve from server", recievePacket));
 							}
-						}else if(tempPort == clientPort) {
-							if(mode == 1) {
-								System.out.println(com.verboseMode("Recieve from client", recievePacket));
-							}
+						}else {
+							intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
+							rando.start();
 						}
+						
 						packet ++;
 						if(tempPort == clientPort) {
 							sendPacket = com.createPacket(recievePacket.getData(), serverPort);
@@ -120,20 +134,25 @@ public class IntermediateHost {
 						recievePacket = com.recievePacket(sendRecieveSocket, 516);
 						tempPort = recievePacket.getPort();
 						
-						if(packet == 0) {
+						if((packet == 0) && clientNotSet) {
+							clientNotSet = false;
 							clientPort = tempPort;
+						}else if(!(tempPort == clientPort)&&serverNotSet) {
+							serverNotSet  = false;
+							serverPort = tempPort;
+						}
+						
+						if(tempPort == clientPort) {
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieve from client", recievePacket));
 							}
-						}else if(!(tempPort == clientPort)) {
-							serverPort = tempPort;
+						}else if(tempPort ==  serverPort) {
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieve from server", recievePacket));
 							}
-						}else if(tempPort == clientPort) {
-							if(mode == 1) {
-								System.out.println(com.verboseMode("Recieve from client", recievePacket));
-							}
+						}else {
+							intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
+							rando.start();
 						}
 						packet ++;
 						if(tempPort == clientPort) {
@@ -168,22 +187,26 @@ public class IntermediateHost {
 						recievePacket = com.recievePacket(sendRecieveSocket, 516);
 						tempPort = recievePacket.getPort();
 						
-						if(packet == 0) {
+						if((packet == 0) && clientNotSet) {
+							clientNotSet = false;
 							clientPort = tempPort;
+						}else if(!(tempPort == clientPort)&&serverNotSet) {
+							serverNotSet  = false;
+							serverPort = tempPort;
+						}
+						
+						if(tempPort == clientPort) {
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieve from client", recievePacket));
 							}
-						}else if(!(tempPort == clientPort)) {
-							serverPort = tempPort;
+						}else if(tempPort ==  serverPort) {
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieve from server", recievePacket));
 							}
-						}else if(tempPort == clientPort) {
-							if(mode == 1) {
-								System.out.println(com.verboseMode("Recieve from client", recievePacket));
-							}
+						}else {
+							intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
+							rando.start();
 						}
-						
 						packet ++;
 						if(tempPort == clientPort) {
 							sendPacket = com.createPacket(recievePacket.getData(), serverPort);
