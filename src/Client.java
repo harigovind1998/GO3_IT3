@@ -98,15 +98,30 @@ public class Client {
 									interHostPort = recievePacket.getPort();
 									TIDSet = true;
 								}
+								msg = com.parseForError(recievePacket);
+								
+								if(msg != null) {
+									if(msg[3]==4) {
+										sendPacket = com.createPacket(msg,interHostPort);
+										com.sendPacket(sendPacket, sendReceiveSocket);
+										if(mode == 1) {
+											com.verboseMode("Sent Packet:", sendPacket, area);
+											area.append("Terminating connection.\n");
+										}
+										break mainLoop;
+									}
+								}
+								
 								if(recievePacket.getPort() != interHostPort) {
 									msg = com.generateErrMessage(new byte[] {0,5}, "");
 									sendPacket = com.createPacket(msg, recievePacket.getPort());
-									com.sendPacket(sendPacket, sendReceiveSocket); //Send message
+									
 									if(mode == 1) {
-										com.verboseMode("Sent Packet:", sendPacket, area);
+										com.verboseMode("Preparing to send Packet to second Server:", sendPacket, area);
 									}
 									break innerSend;
 								}
+								
 								if(com.getPacketType(recievePacket)== 4) {
 									if(com.CheckAck(recievePacket, blockNum)){
 										if(sendPacket.getData()[sendPacket.getLength() -1] == 0 && sendPacket.getData()[0] == 0 && sendPacket.getData()[1] == 3 ){ //Checks to see if the file has come to an end
@@ -128,15 +143,6 @@ public class Client {
 										area.append("Connection with original server lost. Terminating connection");
 										break mainLoop;
 									}
-								}else {
-									msg = com.generateErrMessage(new  byte[] {0,4}, "");
-									sendPacket =  com.createPacket(msg,interHostPort);
-									com.sendPacket(sendPacket, sendReceiveSocket); //Send message
-									if(mode == 1) {
-										com.verboseMode("Sent Packet:", sendPacket, area);
-										area.append("Terminating connection.\n");
-									}
-									break mainLoop;
 								}
 							}
 						break outterSend; //DataPacket sent and the right AckReceived hence continues on to the next packet
@@ -240,18 +246,19 @@ public class Client {
 		System.out.println("Type in file name with file extension i.e '.txt'");
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String fileName = null;
-		try {
-			fileName = reader.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			fileName = reader.readLine();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		System.out.println(fileName);
 		
 		sc.close();
 		Client client = new Client();
 		if(rwMode == 0) {
 			client.readFile(fileName, "Ascii");
 		}else if (rwMode == 1) {
-			client.writeFile(fileName, "Ascii");
+			client.writeFile("writeTest.txt", "Ascii");
 		}
 
 	}

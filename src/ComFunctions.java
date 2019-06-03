@@ -520,12 +520,23 @@ public class ComFunctions {
 		byte[] type = parsePacketType(data);
 		
 		if ((type[0] == 0 && type[1] == 1) || (type[0] == 0 && type[1] == 2)) {
-			byte[] mode = new byte[8];
-			int j = 0;
+			//byte[] mode = new byte[8];
+			int j = 0; // used to determine length of the mode
 			for(int i = data.length-2; i > 0; i--) {
-				if(mode[i] != (byte)0) {
-					mode[j] = data[i]; //puts mode as byte array but in reverse
+				if(data[i] != (byte)0) {
+					//mode[j] = data[i]; //puts mode as byte array but in reverse
 					j++;
+				} else {
+					break;
+				}
+			}
+			
+			byte[] mode = new byte[j];
+			int k = 0;
+			for(int i = data.length-2; i > 0; i--) {
+				if(data[i] != (byte)0) {
+					mode[k] = data[i]; //puts mode as byte array but in reverse
+					k++;
 				} else {
 					break;
 				}
@@ -550,7 +561,7 @@ public class ComFunctions {
 			}
 			//if everything else is fine, return null
 			return  null;
-		} else if((type[0] == 0 && type[1] == 3) || (type[0] == 0 && type[1] == 4)) {
+		} else if((type[0] == 0 && type[1] == 3) || (type[0] == 0 && type[1] == 4) || (type[0] == 0 && type[1] == 5)) {
 			//do nothing for now; not sure if i need to check for errors in ack and data 
 			//other than if they are actually ack or data
 			return null;

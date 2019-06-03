@@ -138,71 +138,86 @@ public class ServerWorker extends Thread {
 					if(mode == 1) {
 						System.out.println(com.verboseMode("Sent Packet:", SendingResponse));
 					}
-					try {
-						innerLoop:
-							while(true) { //Loop that listens for the incoming packet, if the packet is incorrect it keeps listing until the correct one is received 
+					innerLoop:
+						while(true) { //Loop that listens for the incoming packet, if the packet is incorrect it keeps listing until the correct one is received 
+							try {
 								SendRecieveSocket.receive(RecievedResponse);
+							}catch (Exception e) {
+								// TODO: handle exception
 								if(mode == 1) {
-									System.out.println(com.verboseMode("Recieved Packet:", RecievedResponse));
+									System.out.println(com.verboseMode("Preparing to resend packet:", SendingResponse));
+									break mainLoop;										
 								}
-								
-								if(RecievedResponse.getPort() != interHostPort) {
-									msg = com.generateErrMessage(new byte[] {0,5}, "");
-									SendingResponse = com.createPacket(msg, RecievedResponse.getPort());
-									break mainLoop;
-								}
-								
-								//Checks to see if the Data Packet received is the correct packet, if it isn't waits for next incoming packet
-								incomingBlock[0] = RecievedResponse.getData()[2];
-								incomingBlock[1] = RecievedResponse.getData()[3];
-								if((blockNum == ByteBuffer.wrap(incomingBlock).getShort()) && com.getPacketType(RecievedResponse) == 3) {
-									com.writeArrayIntoFile(com.parseBlockData(RecievedResponse.getData()), Paths.get("./Server/" + fileName));
-									last = RecievedResponse.getData()[RecievedResponse.getLength() -1];
-									msg = com.generateAckMessage(com.intToByte(blockNum));
-									SendingResponse = com.createPacket(msg, interHostPort);
-									if(last == 0){ //Checks for if the Data Packet is the last packet
-										com.sendPacket(SendingResponse, SendRecieveSocket);
-										if(mode == 1) {
-											System.out.println(com.verboseMode("Sent", SendingResponse));
-										}
-										System.out.println("End of file reached");
-										break writeLoop; //End of file receive so breaks out of all loops
-									}
-									++blockNum;
-									break innerLoop; //The correct data Packet was received so it leaves the inner loop
-								}else if(blockNum< ByteBuffer.wrap(incomingBlock).getShort()) { // Missed a block
-									msg  = com.generateErrMessage(new byte[] {0,4},"");
-									SendingResponse = com.createPacket(msg, interHostPort);
+							}
+							if(mode == 1) {
+								System.out.println(com.verboseMode("Recieved Packet:", RecievedResponse));
+							}
+							
+							msg = com.parseForError(RecievedResponse);
+							
+							if(msg!= null) {
+								if(msg[3]==4) {
+									SendingResponse = com.createPacket(msg,interHostPort);
 									com.sendPacket(SendingResponse, SendRecieveSocket);
-									if(mode == 1) {
-										System.out.println(com.verboseMode("Sent Packet:", SendingResponse));
-										System.out.println("Ending Connection.");
-									}
-									break writeLoop;
-								}else if(com.getPacketType(RecievedResponse) == 5) {
-									if(RecievedResponse.getData()[2]==0 && RecievedResponse.getData()[3]==5 && blockNum == 1) {
-										System.out.println(com.verboseMode("Recieved Packet:", RecievedResponse));
-										System.out.println("Terminating");
-										break writeLoop;
-									}
-								}else if(!(com.getPacketType(RecievedResponse)==5)) {
-									msg  = com.generateErrMessage(new byte[] {0,4},"");
-									SendingResponse = com.createPacket(msg, interHostPort);
-									com.sendPacket(SendingResponse, SendRecieveSocket);
-									if(mode == 1) {
-										System.out.println(com.verboseMode("Sent Packet:", SendingResponse));
-									}
 									break writeLoop;
 								}
 							}
-						break mainLoop; //block was written in to file so the server can send the ack packet and start listening for n+1 packet
-					} catch (Exception e) {
-						// TODO: handle exception
-						//Receive timed out
-						if(mode == 1) {
-							System.out.println(com.verboseMode("Preparing to resend packet:", SendingResponse));
+							
+							if(RecievedResponse.getPort() != interHostPort) {
+								msg = com.generateErrMessage(new byte[] {0,5}, "");
+								SendingResponse = com.createPacket(msg, RecievedResponse.getPort());
+								break mainLoop;
+							}
+							
+							
+							
+							//Checks to see if the Data Packet received is the correct packet, if it isn't waits for next incoming packet
+							incomingBlock[0] = RecievedResponse.getData()[2];
+							incomingBlock[1] = RecievedResponse.getData()[3];
+							if((blockNum == ByteBuffer.wrap(incomingBlock).getShort()) && com.getPacketType(RecievedResponse) == 3) {
+								com.writeArrayIntoFile(com.parseBlockData(RecievedResponse.getData()), Paths.get("./Server/" + fileName));
+								last = RecievedResponse.getData()[RecievedResponse.getLength() -1];
+								msg = com.generateAckMessage(com.intToByte(blockNum));
+								SendingResponse = com.createPacket(msg, interHostPort);
+								if(last == 0){ //Checks for if the Data Packet is the last packet
+									com.sendPacket(SendingResponse, SendRecieveSocket);
+									if(mode == 1) {
+										System.out.println(com.verboseMode("Sent", SendingResponse));
+									}
+									System.out.println("End of file reached");
+									break writeLoop; //End of file receive so breaks out of all loops
+								}
+								++blockNum;
+								break innerLoop; //The correct data Packet was received so it leaves the inner loop
+							}else if((blockNum< ByteBuffer.wrap(incomingBlock).getShort()) &&com.getPacketType(RecievedResponse) == 3) { // Missed a block
+								msg  = com.generateErrMessage(new byte[] {0,4},"");
+								SendingResponse = com.createPacket(msg, interHostPort);
+								com.sendPacket(SendingResponse, SendRecieveSocket);
+								if(mode == 1) {
+									System.out.println(com.verboseMode("Sent Packet:", SendingResponse));
+									System.out.println("Ending Connection.");
+								}
+								break writeLoop;
+							}else if(com.getPacketType(RecievedResponse) == 5) { //If it an error packet, do things accordingly 
+								if(RecievedResponse.getData()[2]==0 && RecievedResponse.getData()[3]==5) {
+									System.out.println("Terminating due to receiving error packet 5");
+									break writeLoop;
+								}if(RecievedResponse.getData()[2]==0 && RecievedResponse.getData()[3]==4) {
+									System.out.println("Terminating due to receiving error packet  4");
+									break writeLoop;
+								}
+							}else if(!(com.getPacketType(RecievedResponse)==5)) {
+								msg  = com.generateErrMessage(new byte[] {0,4},"");
+								SendingResponse = com.createPacket(msg, interHostPort);
+								com.sendPacket(SendingResponse, SendRecieveSocket);
+								if(mode == 1) {
+									System.out.println(com.verboseMode("Sent Packet:", SendingResponse));
+								}
+								break writeLoop;
+							}
 						}
-					}
+					break mainLoop; //block was written in to file so the server can send the ack packet and start listening for n+1 packet
+					
 				}
 			
 			

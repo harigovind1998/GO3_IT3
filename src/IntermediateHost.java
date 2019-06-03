@@ -153,30 +153,31 @@ public class IntermediateHost {
 							intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
 							rando.start();
 						}
-						packet ++;
-						if(tempPort == clientPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), serverPort);
-						}else if(tempPort == serverPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), clientPort);
-						}
-										
-						if(packetCounter != packetNumber) {
-							com.sendPacket(sendPacket, sendRecieveSocket);
-							packetCounter++;
-							if((mode == 1)&& (tempPort == clientPort)) {
-								System.out.println(com.verboseMode("Send to Server", recievePacket));
+						
+						if(tempPort  ==clientPort || tempPort  == serverPort) {
+							packet ++;
+							if(tempPort == clientPort) {
+								sendPacket = com.createPacket(recievePacket.getData(), serverPort);
+							}else if(tempPort == serverPort) {
+								sendPacket = com.createPacket(recievePacket.getData(), clientPort);
 							}
-							
-							if((mode == 1) && (tempPort == serverPort)) {
-								System.out.println(com.verboseMode("Send to Client", recievePacket));
-							}
-						}else{
-							//if we the packetCount has reached to the same value as the packetNumer we want to lose, the error simulator Starts a deyalSimulator that sends the packet after a specified period of time
+							if(packetCounter != packetNumber) {
+								com.sendPacket(sendPacket, sendRecieveSocket);
+								packetCounter++;
+								if((mode == 1)&& (tempPort == clientPort)) {
+									System.out.println(com.verboseMode("Send to Server", recievePacket));
+								}
+								if((mode == 1) && (tempPort == serverPort)) {
+									System.out.println(com.verboseMode("Send to Client", recievePacket));
+								}
+							}else{
+								//if we the packetCount has reached to the same value as the packetNumer we want to lose, the error simulator Starts a deyalSimulator that sends the packet after a specified period of time
 								packetCounter++;
 								System.out.println("Delaying packet...");
 								delaySimulator delay  = new delaySimulator(recievePacket, (long)packetDelay);
-								
+								delay.start();
 							}
+						}
 						
 						
 					}
@@ -206,39 +207,38 @@ public class IntermediateHost {
 							intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
 							rando.start();
 						}
-						packet ++;
-						if(tempPort == clientPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), serverPort);
-							
-						}else if(tempPort == serverPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), clientPort);
-							
-						}
-										
-						if(packetCounter != packetNumber) {
-							com.sendPacket(sendPacket, sendRecieveSocket);
-							packetCounter++;
-							if((mode == 1)&& (tempPort == clientPort)) {
-								System.out.println(com.verboseMode("Send to Server", recievePacket));
+						
+						if(tempPort  ==clientPort || tempPort  == serverPort) {
+							packet ++;
+							if(tempPort == clientPort) {
+								sendPacket = com.createPacket(recievePacket.getData(), serverPort);
+							}else if(tempPort == serverPort) {
+								sendPacket = com.createPacket(recievePacket.getData(), clientPort);
 							}
-							
-							if((mode == 1) && (tempPort == serverPort)) {
-								System.out.println(com.verboseMode("Send to Client", recievePacket));
-							}
-						}else {
-							//if we the packetCount has reached to the same value as the packetNumer we want to lose, the error simulator duplicates the packet dup number of times
-							for(int i = 0; i< dup; i ++) {
+			
+							if(packetCounter != packetNumber) {
 								com.sendPacket(sendPacket, sendRecieveSocket);
+								packetCounter++;
 								if((mode == 1)&& (tempPort == clientPort)) {
-									System.out.println(com.verboseMode("Duplicate send to Server", recievePacket));
+									System.out.println(com.verboseMode("Send to Server", recievePacket));
 								}
-								
 								if((mode == 1) && (tempPort == serverPort)) {
-									System.out.println(com.verboseMode("duplicate Send to Client", recievePacket));
+									System.out.println(com.verboseMode("Send to Client", recievePacket));
 								}
+							}else {
+							//if we the packetCount has reached to the same value as the packetNumer we want to lose, the error simulator duplicates the packet dup number of times
+								for(int i = 0; i< dup; i ++) {
+									com.sendPacket(sendPacket, sendRecieveSocket);
+									if((mode == 1)&& (tempPort == clientPort)) {
+									System.out.println(com.verboseMode("Duplicate send to Server", recievePacket));
+									}
+								
+									if((mode == 1) && (tempPort == serverPort)) {
+										System.out.println(com.verboseMode("duplicate Send to Client", recievePacket));
+									}
+								}
+								packetCounter++;
 							}
-							packetCounter++;
-							
 						}
 					}
 		}
