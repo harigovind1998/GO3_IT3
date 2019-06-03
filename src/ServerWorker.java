@@ -47,8 +47,10 @@ public class ServerWorker extends Thread {
 			getFileName();
 			return true;
 		}else {
-			System.out.println("Error Packet");
 			DatagramPacket errorPacket = com.createPacket(com.generateErrMessage(new byte[] {0, 4}, ""),initialPacket.getPort());
+			if(mode==1) {
+				System.out.println(com.verboseMode("Error Packet Recieved as a req:", errorPacket));
+			}
 			DatagramSocket errorSocket = com.startSocket();
 			com.sendPacket(errorPacket, errorSocket);
 			errorSocket.close();

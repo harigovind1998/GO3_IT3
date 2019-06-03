@@ -20,11 +20,10 @@ public class IntermediateHost {
 	private int packetCounter = 1;
 	
 	/**
-	 * Waits to recieve a message from the client and passes that on to the server
+	 * Waits to receive a message from the client and passes that on to the server
 	 */
 	public void recieveMessage(){
-		DatagramPacket tempPacket = null;
-		byte[] blockNum = null;
+		
 		int packet = 0;
 		int tempPort = 0;
 		boolean serverNotSet = true;

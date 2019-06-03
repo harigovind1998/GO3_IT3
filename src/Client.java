@@ -14,10 +14,12 @@ import javax.swing.JTextArea;
 import java.io.FileOutputStream; 
 import java.io.OutputStream; 
 import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 public class Client {
 	ComFunctions com;
-	DatagramSocket sendRecieveSocket;
+	DatagramSocket sendReceiveSocket;
 	private static JFrame frame = new JFrame();
 	private static JTextArea area = new JTextArea();
 	private static JScrollPane scroll;
@@ -29,18 +31,24 @@ public class Client {
 	private static int mode, simMode;
 	private int interHostPort = 23;
 	private  boolean TIDSet = false;
+	/**
+	 * The Client presents the user with a front end GUI that displays data being passed and received to and from the server. The client can either read a file from
+	 * the server, making a local copy in the ./Client/ folder or write a file to the server, this will take a file in ./Client/ transfer it to the client that will
+	 * create a copy in ./Server/ 
+	 */
 	public Client(){
+		//If we arent simulating, we can bypass the errror simulator and create a connection directly with the server
 		if((int)simMode == 1) {
-			System.out.print("GEEEEEEEY");
 			interHostPort = 69;
 		}
 		com = new ComFunctions();
-		sendRecieveSocket = com.startSocket();
+		sendReceiveSocket = com.startSocket(); //Socket that is used to send and receive packets from the server/errorSimulator
 		try {
-			sendRecieveSocket.setSoTimeout(10000);
+			sendReceiveSocket.setSoTimeout(10000); //Setting a socket timeout for receive, used mostly re-send packets
 		} catch (SocketException e1) {
 			e1.printStackTrace();
 		}
+		//Making a GUI to display passed information
 		frame.setSize(420, 440);
 		area.setBounds(10, 10, 380, 380);
 		scroll = new JScrollPane(area, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -68,22 +76,20 @@ public class Client {
 		byte[] fileAsByteArr = com.readFileIntoArray("./Client/"+name);
 		int blockNum = 0;
 		
-
-		//sendPacket = com.createPacket(msg, interHostPort);
 		mainLoop:
 		while(true){
-			//Loop that is in charge of sending/resending the data packet
+			//Loop that is in charge of sending/re-sending the data packet
 			outterSend:
 				while(true) {
-					com.sendPacket(sendPacket, sendRecieveSocket); //Send message
+					com.sendPacket(sendPacket, sendReceiveSocket); //Send message
 					if(mode == 1) {
 						com.verboseMode("Sent Packet:", sendPacket, area);
 					}
 					try {
-						//Loop that ensures that the incoming AckPackets are correct, if it isn't, it will loop back to listening until the correct Ack is recieved or the the socket receive times out
+						//Loop that ensures that the incoming AckPackets are correct, if it isn't, it will loop back to listening until the correct Ack is received or the the socket receive times out
 						innerSend:
 							while(true) {
-								sendRecieveSocket.receive(recievePacket);
+								sendReceiveSocket.receive(recievePacket);
 								if(mode == 1) {
 									com.verboseMode("Recieved Packet:", recievePacket,area);
 								}
@@ -95,7 +101,7 @@ public class Client {
 								if(recievePacket.getPort() != interHostPort) {
 									msg = com.generateErrMessage(new byte[] {0,5}, "");
 									sendPacket = com.createPacket(msg, recievePacket.getPort());
-									com.sendPacket(sendPacket, sendRecieveSocket); //Send message
+									com.sendPacket(sendPacket, sendReceiveSocket); //Send message
 									if(mode == 1) {
 										com.verboseMode("Sent Packet:", sendPacket, area);
 									}
@@ -125,7 +131,7 @@ public class Client {
 								}else {
 									msg = com.generateErrMessage(new  byte[] {0,4}, "");
 									sendPacket =  com.createPacket(msg,interHostPort);
-									com.sendPacket(sendPacket, sendRecieveSocket); //Send message
+									com.sendPacket(sendPacket, sendReceiveSocket); //Send message
 									if(mode == 1) {
 										com.verboseMode("Sent Packet:", sendPacket, area);
 										area.append("Terminating connection.\n");
@@ -158,7 +164,7 @@ public class Client {
 		try {
 			yourFile.createNewFile();
 		} catch (Exception e) {
-			// TODO: handle exception
+			//Can use this to create I/O error packets
 			e.printStackTrace();
 		}
 		f2path = Paths.get("./Client/" + name);
@@ -171,55 +177,55 @@ public class Client {
 		
 		outerloop:
 		while(true) {
-			
-			com.sendPacket(sendPacket, sendRecieveSocket);
+			com.sendPacket(sendPacket, sendReceiveSocket);
 			if (mode == 1) {
 				com.verboseMode("Sent", sendPacket, area);
 			}
-			try {
-				innerLoop:
-				while(true) {
-					sendRecieveSocket.receive(recievePacket);
-					if (mode == 1) {
-						com.verboseMode("Received Packet:", recievePacket, area);
-					}
-					messageReceived = recievePacket.getData();
-					//Add check  to see if the packet is a data Packet
-					blockNum[0] =  messageReceived[2];
-					blockNum[1] = messageReceived[3];
-					dataReceived = com.parseBlockData(messageReceived);
+			innerLoop:
+			while(true) {
+				try {
+					sendReceiveSocket.receive(recievePacket);
+				}catch(Exception e) {
+					com.verboseMode("Preparing to resend packet:", sendPacket, area);
+					break innerLoop;
+				}
+				if (mode == 1) {
+					com.verboseMode("Received Packet:", recievePacket, area);
+				}
+				if((int)simMode == 1 && !TIDSet) {
+					interHostPort = recievePacket.getPort();
+					TIDSet = true;
+				}
+				messageReceived = recievePacket.getData();
+				//Add check  to see if the packet is a data Packet
+				blockNum[0] =  messageReceived[2];
+				blockNum[1] = messageReceived[3];
+				dataReceived = com.parseBlockData(messageReceived);		
+				if(com.intToByte(expectedBlock)[0] == blockNum[0]&& com.intToByte(expectedBlock)[1] == blockNum[1]) {
 					byte[] ackMsg = com.generateAckMessage(blockNum);
 					sendPacket = com.createPacket(ackMsg, interHostPort);
-					if(com.intToByte(expectedBlock)[0] == blockNum[0]&& com.intToByte(expectedBlock)[1] == blockNum[1]) {
-						expectedBlock++;
-						try {
-							Files.write(f2path, dataReceived, StandardOpenOption.APPEND);
-						}catch (IOException e) {
-							e.printStackTrace();
-						}
-						if(dataReceived[511] == (byte)0) {
-							com.sendPacket(sendPacket, sendRecieveSocket);
-							if (mode == 1) {
-								com.verboseMode("Sent Packet:", sendPacket, area);
-							}
-							break outerloop; //File transfer has completed
-						}
-						if((int)simMode == 1 && !TIDSet) {
-							interHostPort = recievePacket.getPort();
-							TIDSet = true;
-						}
-						break innerLoop; //Right packet has been received
-					}else {
-						area.append("Wrong Packet Recieved, ignoring\n");
+					expectedBlock++;
+					try {
+						Files.write(f2path, dataReceived, StandardOpenOption.APPEND);
+					}catch (IOException e) {
+						e.printStackTrace();
 					}
+					if(dataReceived[511] == (byte)0) {
+						com.sendPacket(sendPacket, sendReceiveSocket);
+					if (mode == 1) {
+						com.verboseMode("Sent last Packet:", sendPacket, area);
+					}
+						break outerloop; //File transfer has completed
+					}
+					break innerLoop; //Right packet has been received
+				}else {
+						area.append("Wrong Packet Recieved, ignoring\n");
 				}
-			} catch (Exception e) {
-				// TODO: handle exception
-				com.verboseMode("Preparing to resend packet:", sendPacket, area);
 			}
+			
 		}
 		area.append("End of File reached!\n");	
-}
+	}
 	
 	public static void main(String[] args) {
 		
@@ -231,14 +237,21 @@ public class Client {
 		
 		System.out.println("Select Operation: Read [0], Write[1]");
 		int rwMode = sc.nextInt();
-		//System.out.println("Type in file name with file extension i.e '.txt'");
-		//String fileName = sc.nextLine();
+		System.out.println("Type in file name with file extension i.e '.txt'");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        String fileName = null;
+		try {
+			fileName = reader.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		sc.close();
 		Client client = new Client();
 		if(rwMode == 0) {
-			client.readFile("readTest.txt", "Ascii");
+			client.readFile(fileName, "Ascii");
 		}else if (rwMode == 1) {
-			client.writeFile("writeTest.txt", "Ascii");
+			client.writeFile(fileName, "Ascii");
 		}
 
 	}
