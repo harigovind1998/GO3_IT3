@@ -314,14 +314,19 @@ public class ComFunctions {
 	 * @return temp which holds the byteArr of a blockNumber
 	 */
 	public byte[] getBlock(int blockNumber, byte[] byteArray) {
-		byte[] temp = new byte[512];
+		byte[] temp;
+		if((blockNumber * 512) > byteArray.length) {
+			temp = new byte[byteArray.length % 512];
+		}else {
+			temp = new byte[512];
+		}
 		int len = byteArray.length;
 		int track = 0;
 		for(int i = ((blockNumber - 1) * 512); i < ((blockNumber ) * 512); i ++) {
 			if(i < len) {
 				temp[track] = byteArray[i];
 			}else {
-				temp[track] = 0;
+//				temp[track] = 0;
 			}
 			track ++;
 		}
@@ -386,6 +391,21 @@ public class ComFunctions {
 	}
 	
 	/**
+	 * Takes the packet sent and parses out the data
+	 * @param arr the array of bytes being sent
+	 * @return data only the data of the array sent
+	 */
+	public byte[] parseBlockData(DatagramPacket packet) {
+		byte arr[] = packet.getData();
+		byte[] data = new byte[packet.getLength()-4];
+		for(int i = 4; i < packet.getLength(); i++) {
+			data[i-4] = arr[i];
+		}
+		return data;
+		
+	}
+	
+	/**
 	 * Updates a specified JTextArea with the current action
 	 * @param status action thats being performed
 	 * @param packet packet that has just been recieved or sent 
@@ -404,14 +424,14 @@ public class ComFunctions {
 			byte[] blockNum = new byte[2];
 			blockNum[0] = packetData[2];
 			blockNum[1] = packetData[3];
-			int byteCounter = 0;
-			byte[] fileBlock = parseBlockData(packetData);
-			for(byte b: fileBlock) {
-				if(fileBlock[b] != (byte)0) {
-					byteCounter++;
-				}
-			}
-			verbose += "DATA; BlockNumber: " + ByteBuffer.wrap(blockNum).getShort() + "; Numer of Bytes: " + byteCounter + "\n";     
+//			int byteCounter = 0;
+//			byte[] fileBlock = parseBlockData(packetData);
+//			for(byte b: fileBlock) {
+//				if(fileBlock[b] != (byte)0) {
+//					byteCounter++;
+//				}
+//			}
+			verbose += "DATA; BlockNumber: " + ByteBuffer.wrap(blockNum).getShort() + "; Numer of Bytes: " + packet.getLength() + "\n";     
 		} else if (packetData[0] ==  (byte)0 && packetData[1] == (byte)4) {
 			byte[] blockNum = new byte[2];
 			blockNum[0] = packetData[2];
@@ -450,7 +470,7 @@ public class ComFunctions {
 					byteCounter++;
 				}
 			}
-			verbose += "DATA; BlockNumber: " + ByteBuffer.wrap(blockNum).getShort() + "; Numer of Bytes: " + byteCounter + "\n";     
+			verbose += "DATA; BlockNumber: " + ByteBuffer.wrap(blockNum).getShort() + "; Numer of Bytes: " + packet.getLength() + "\n";     
 		} else if (packetData[0] ==  (byte)0 && packetData[1] == (byte)4) {
 			byte[] blockNum = new byte[2];
 			blockNum[0] = packetData[2];

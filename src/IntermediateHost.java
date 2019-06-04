@@ -182,7 +182,7 @@ public class IntermediateHost {
 				case 3:
 					while(true) { 
 						//Receiving a message to from the client, prints the message, created a new packet to send to the server, prints that message for clarification and sends it the server
-						//Same logic as case 0 except duplicates packet as needed
+						//Same logic as case 0 except duplicates packet as needed1
 						recievePacket = com.recievePacket(sendRecieveSocket, 516);
 						tempPort = recievePacket.getPort();
 						

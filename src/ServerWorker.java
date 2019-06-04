@@ -121,13 +121,15 @@ public class ServerWorker extends Thread {
 
 								if(com.getPacketType(RecievedResponse)== 4) {
 									if(com.CheckAck(RecievedResponse, blockNum)){
-										if(SendingResponse.getData()[SendingResponse.getLength() -1] == 0 && SendingResponse.getData()[0] == 0 && SendingResponse.getData()[1] == 3 ){ //Checks to see if the file has come to an end
+										if(SendingResponse.getLength() < 512 && SendingResponse.getData()[1] == 3 ){ //Checks to see if the file has come to an end
 											System.out.println("End of File reached!\n");
 											break mainLoop;
-										}	
+										}
+										
 										blockNum ++ ;
 										msg = com.generateDataPacket(com.intToByte(blockNum), com.getBlock(blockNum, fileByteReadArray));
 										SendingResponse = com.createPacket(msg, interHostPort);
+										com.printMessage("Sending", msg);
 										break innerSend;
 									}else {
 										System.out.println("Wrong block recieved, continue waiting...\n");

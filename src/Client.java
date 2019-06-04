@@ -227,19 +227,21 @@ public class Client {
 					}
 					break innerLoop;
 				}
-				messageReceived = recievePacket.getData();
+				//messageReceived = recievePacket.getData();
 				//Add check  to see if the packet is a data Packet
-				incomingBlock[0] =  messageReceived[2];
-				incomingBlock[1] = messageReceived[3];
+				incomingBlock[0] =  recievePacket.getData()[2];
+				incomingBlock[1] = recievePacket.getData()[3];
 				
 				if((blockNum == ByteBuffer.wrap(incomingBlock).getShort()) && com.getPacketType(recievePacket) == 3) {
-					dataReceived = com.parseBlockData(messageReceived);		
+					dataReceived = com.parseBlockData(recievePacket);		
 					com.writeArrayIntoFile(dataReceived, f2path);
-					last = messageReceived[recievePacket.getLength() -1];
+					area.append("writing to file\n");
+					com.printMessage("Received", dataReceived);
 					msg = com.generateAckMessage(com.intToByte(blockNum));
 					sendPacket = com.createPacket(msg, interHostPort);
 					blockNum++;
-					if(last == 0){ //Checks for if the Data Packet is the last packet
+					
+					if(recievePacket.getLength()<512){ //Checks for if the Data Packet is the last packet
 						com.sendPacket(sendPacket, sendReceiveSocket);
 						if(mode == 1) {
 							com.verboseMode("Sent", sendPacket,area);
