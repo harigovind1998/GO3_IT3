@@ -68,6 +68,7 @@ public class ServerWorker extends Thread {
 		byte [] fileByteReadArray = com.readFileIntoArray("./Server/" + fileName);
 		int blockNum = 1;
 		//Keeps looping until it is the entire file has been sent over
+		int tries = 0;
 		mainLoop:
 			while(true){
 				byte[] msg = com.generateDataPacket(com.intToByte(blockNum), com.getBlock(blockNum, fileByteReadArray));
@@ -86,11 +87,19 @@ public class ServerWorker extends Thread {
 								try {
 									SendRecieveSocket.receive(RecievedResponse);
 								} catch (Exception e) {
-									if(mode == 1) {
-										System.out.println(com.verboseMode("Preparing to resend packet:", SendingResponse));
+									tries ++;
+									if(tries < 4) {
+										if(mode == 1) {
+											System.out.println(com.verboseMode("Preparing to resend packet:", SendingResponse));
+										}
+										break innerSend;
+									}else {
+										System.out.println("Connection Lost, terminating client\n");
+										break mainLoop;
 									}
-									break innerSend;
 								}
+								
+								tries = 0;
 								if(mode == 1) {
 									System.out.println(com.verboseMode("Recieved Packet:", RecievedResponse));
 								}
@@ -131,8 +140,18 @@ public class ServerWorker extends Thread {
 										SendingResponse = com.createPacket(msg, interHostPort);
 										
 										break innerSend;
+									}else if (blockNum < ByteBuffer.wrap(new byte[] {RecievedResponse.getData()[2],RecievedResponse.getData()[3]}).getShort()){
+										System.out.println("Duplicate Block received, continue waiting...\n");
 									}else {
-										System.out.println("Wrong block recieved, continue waiting...\n");
+										msg  = com.generateErrMessage(new byte[] {0,4},"");
+										SendingResponse = com.createPacket(msg, interHostPort);
+										com.sendPacket(SendingResponse, SendRecieveSocket);
+										if(mode == 1) {
+											System.out.println("Block received out of order, Terminating...");
+											System.out.println(com.verboseMode("Sent Packet:", SendingResponse));
+											System.out.println("Ending Connection.");
+										}
+										break mainLoop;
 									}
 								}else if (com.getPacketType(RecievedResponse)==5){
 									if(RecievedResponse.getData()[3]==4){
@@ -170,7 +189,7 @@ public class ServerWorker extends Thread {
 		SendingResponse = com.createPacket(com.generateAckMessage(com.intToByte(blockNum)), interHostPort);
 		
 		blockNum++;
-		
+		int tries = 0;
 		writeLoop:
 		while (true) {//Loop to write the entire file
 			mainLoop:
@@ -184,10 +203,21 @@ public class ServerWorker extends Thread {
 							try {
 								SendRecieveSocket.receive(RecievedResponse);
 							}catch (Exception e) {
-								// TODO: handle exception
-								if(mode == 1) {
-									System.out.println(com.verboseMode("Preparing to resend packet:", SendingResponse));
-									break mainLoop;										
+//								// TODO: handle exception
+//								if(mode == 1) {
+//									System.out.println(com.verboseMode("Preparing to resend packet:", SendingResponse));
+//									break mainLoop;										
+//								}
+								
+								tries ++;
+								if(tries < 4) {
+									if(mode == 1) {
+										System.out.println(com.verboseMode("Preparing to resend packet:", SendingResponse));
+									}
+									break mainLoop;
+								}else {
+									System.out.println("Connection Lost, terminating client\n");
+									break writeLoop;
 								}
 							}
 							if(mode == 1) {
@@ -294,7 +324,7 @@ public class ServerWorker extends Thread {
 		com = new ComFunctions();
 		SendRecieveSocket = com.startSocket();
 		try {
-			SendRecieveSocket.setSoTimeout(100000);
+			SendRecieveSocket.setSoTimeout(1000);
 		} catch (SocketException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

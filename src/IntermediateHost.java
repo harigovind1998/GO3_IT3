@@ -10,7 +10,7 @@ public class IntermediateHost {
 	workerThread externalThread;
 	int serverPort = 69;
 	int clientPort;
-	int mode;
+	public static int mode;
 	private int interHostPort = 23;
 	
 	private static int packetNumber;
@@ -57,7 +57,11 @@ public class IntermediateHost {
 					if(tempPort  ==clientPort || tempPort  == serverPort) { //If the packet received was from an exptected TID, continue transfer as normal else allow the IntermediateHostRandomPort handle the rest
 						packet ++;
 						if(tempPort == clientPort) {
-							sendPacket = com.createPacket(recievePacket, serverPort);
+							if(recievePacket.getData()[0]==0 && (recievePacket.getData()[1]==1 || recievePacket.getData()[1]==2)) {
+								sendPacket = com.createPacket(recievePacket, 69);
+							}else {
+								sendPacket = com.createPacket(recievePacket, serverPort);
+							}
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Send to Server", recievePacket));
 							}
@@ -102,7 +106,11 @@ public class IntermediateHost {
 						
 						packet ++;
 						if(tempPort == clientPort) {
-							sendPacket = com.createPacket(recievePacket, serverPort);
+							if(recievePacket.getData()[0]==0 && (recievePacket.getData()[1]==1 || recievePacket.getData()[1]==2)) {
+								sendPacket = com.createPacket(recievePacket, 69);
+							}else {
+								sendPacket = com.createPacket(recievePacket, serverPort);
+							}
 							
 						}else if(tempPort == serverPort) {
 							sendPacket = com.createPacket(recievePacket, clientPort);
@@ -152,10 +160,14 @@ public class IntermediateHost {
 							rando.start();
 						}
 						
-						if(tempPort  ==clientPort || tempPort  == serverPort) {
+						if(tempPort  == clientPort || tempPort  == serverPort) {
 							packet ++;
 							if(tempPort == clientPort) {
-								sendPacket = com.createPacket(recievePacket, serverPort);
+								if(recievePacket.getData()[0]==0 && (recievePacket.getData()[1]==1 || recievePacket.getData()[1]==2)) {
+									sendPacket = com.createPacket(recievePacket, 69);
+								}else {
+									sendPacket = com.createPacket(recievePacket, serverPort);
+								}
 							}else if(tempPort == serverPort) {
 								sendPacket = com.createPacket(recievePacket, clientPort);
 							}
@@ -171,9 +183,16 @@ public class IntermediateHost {
 							}else{
 								//if we the packetCount has reached to the same value as the packetNumer we want to lose, the error simulator Starts a deyalSimulator that sends the packet after a specified period of time
 								packetCounter++;
-								System.out.println("Delaying packet...");
-								delaySimulator delay  = new delaySimulator(recievePacket, (long)packetDelay);
-								delay.start();
+								if(tempPort  == clientPort) {
+									System.out.println("Delaying packet to Server...");
+									delaySimulator delay  = new delaySimulator(recievePacket, (long)packetDelay,sendRecieveSocket,serverPort);
+									delay.start();
+								}else {
+									System.out.println("Delaying packet to Client...");
+									delaySimulator delay  = new delaySimulator(recievePacket, (long)packetDelay,sendRecieveSocket,clientPort);
+									delay.start();
+								}
+								
 							}
 						}
 						
@@ -210,7 +229,11 @@ public class IntermediateHost {
 						if(tempPort  ==clientPort || tempPort  == serverPort) {
 							packet ++;
 							if(tempPort == clientPort) {
-								sendPacket = com.createPacket(recievePacket, serverPort);
+								if(recievePacket.getData()[0]==0 && (recievePacket.getData()[1]==1 || recievePacket.getData()[1]==2)) {
+									sendPacket = com.createPacket(recievePacket, 69);
+								}else {
+									sendPacket = com.createPacket(recievePacket, serverPort);
+								}
 							}else if(tempPort == serverPort) {
 								sendPacket = com.createPacket(recievePacket, clientPort);
 							}

@@ -18,7 +18,7 @@ public class Server {
 			recievePacket = com.recievePacket(recieveSocket, REQUEST_SIZE); 
 			//if the received packet is valid, passes the message onto a worker thread that takes care of all request until it is complete 
 			if(mode == 1) {
-				System.out.println(com.verboseMode("Recieve", recievePacket));
+				System.out.println(com.verboseMode("Main server Recieved", recievePacket));
 			}
 			ServerWorker worker = new ServerWorker(Integer.toString((recievePacket.getPort())), recievePacket,mode);
 			worker.start();
