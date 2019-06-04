@@ -45,7 +45,7 @@ public class Client {
 		com = new ComFunctions();
 		sendReceiveSocket = com.startSocket(); //Socket that is used to send and receive packets from the server/errorSimulator
 		try {
-			sendReceiveSocket.setSoTimeout(100000); //Setting a socket timeout for receive, used mostly re-send packets
+			sendReceiveSocket.setSoTimeout(1000); //Setting a socket timeout for receive, used mostly re-send packets
 		} catch (SocketException e1) {
 			e1.printStackTrace();
 		}
@@ -76,7 +76,7 @@ public class Client {
 
 		byte[] fileAsByteArr = com.readFileIntoArray("./Client/"+name);
 		int blockNum = 0;
-
+		int tries = 0;
 		mainLoop:
 			while(true){
 				//Loop that is in charge of sending/re-sending the data packet
@@ -93,10 +93,18 @@ public class Client {
 								try {
 									sendReceiveSocket.receive(recievePacket);
 								}catch(IOException e ) {
-									if(mode == 1) {
-										com.verboseMode("Preparing to resend packet:", sendPacket, area);
+									tries ++;
+									if(tries < 4) {
+										if(mode ==1) {
+											com.verboseMode("Preparing to resend packet:", sendPacket, area);
+										}
+										break innerSend;
+									}else {
+										area.append("Connection Lost, terminating client\n");
+										break mainLoop;
 									}
 								}
+								tries = 0;
 								if(mode == 1) {
 									com.verboseMode("Recieved Packet:", recievePacket,area);
 								}
@@ -139,8 +147,18 @@ public class Client {
 										msg = com.generateDataPacket(com.intToByte(blockNum), com.getBlock(blockNum, fileAsByteArr));
 										sendPacket = com.createPacket(msg, interHostPort);
 										break innerSend;
+									}else if (blockNum < ByteBuffer.wrap(new byte[] {recievePacket.getData()[2],recievePacket.getData()[3]}).getShort()){
+										System.out.println("Duplicate Block received, continue waiting...\n");
 									}else {
-										area.append("Wrong block recieved, continue waiting...\n");
+										msg  = com.generateErrMessage(new byte[] {0,4},"");
+										sendPacket = com.createPacket(msg, interHostPort);
+										com.sendPacket(sendPacket, sendReceiveSocket);
+										if(mode == 1) {
+											System.out.println("Block received out of order, Terminating...");
+											System.out.println(com.verboseMode("Sent Packet:", sendPacket));
+											System.out.println("Ending Connection.");
+										}
+										break mainLoop;
 									}
 								}else if (com.getPacketType(recievePacket)==5){
 									if(recievePacket.getData()[3]==4){
@@ -183,21 +201,31 @@ public class Client {
 		byte[] dataReceived = null;
 		int last;
 		int blockNum = 1;
-		
+		int tries = 0;
 		outerloop:
 		while(true) {
 			com.sendPacket(sendPacket, sendReceiveSocket);
 			if (mode == 1) {
 				com.verboseMode("Sent", sendPacket, area);
 			}
+			
 			innerLoop:
 			while(true) {
 				try {
 					sendReceiveSocket.receive(recievePacket);
 				}catch(Exception e) {
-					com.verboseMode("Preparing to resend packet:", sendPacket, area);
-					break innerLoop;
+					tries ++;
+					if(tries < 4) {
+						if(mode ==1) {
+							com.verboseMode("Preparing to resend packet:", sendPacket, area);
+						}
+						break innerLoop;
+					}else {
+						area.append("Connection Lost, terminating client\n");
+						break outerloop;
+					}
 				}
+				tries = 0;
 				if (mode == 1) {
 					com.verboseMode("Received Packet:", recievePacket, area);
 				}
@@ -259,6 +287,10 @@ public class Client {
 						area.append("Ending Connection.");
 					}
 					break outerloop;
+				}else if (com.getPacketType(recievePacket)==3){
+					if(mode==1) {
+						System.out.println("Received duplicate Data packet");
+					}
 				}else if(com.getPacketType(recievePacket) == 5) { //If it an error packet, do things accordingly 
 					if(recievePacket.getData()[2]==0 && recievePacket.getData()[3]==5) {
 						area.append("Terminating due to receiving error packet 5");
@@ -300,13 +332,22 @@ public class Client {
 //			e.printStackTrace();
 //		}
 //		System.out.println(fileName);
+		System.out.println("Type in file name with file extension i.e '.txt'");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        String fileName = null;
+		try {
+			fileName = reader.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println(fileName);
 		
 		sc.close();
 		Client client = new Client();
 		if(rwMode == 0) {
-			client.readFile("readTest.txt", "Ascii");
+			client.readFile(fileName, "Ascii");
 		}else if (rwMode == 1) {
-			client.writeFile("writeTest.txt", "Ascii");
+			client.writeFile(fileName, "Ascii");
 		}
 
 	}

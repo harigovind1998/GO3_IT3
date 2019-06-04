@@ -655,47 +655,13 @@ public class ComFunctions {
 		int len = packet.getLength();
 
 		if ((type[0] == 0 && type[1] == 1) || (type[0] == 0 && type[1] == 2)) {
-			//byte[] mode = new byte[8];
-			int j = 0; // used to determine length of the mode
-			for(int i = len-2; i > 0; i--) {
-				if(data[i] != (byte)0) {
-					//mode[j] = data[i]; //puts mode as byte array but in reverse
-					j++;
-				} else {
-					break;
-				}
-			}
-
-			byte[] mode = new byte[j];
-			int k = 0;
-			for(int i = len-2; i > 0; i--) {
-				if(data[i] != (byte)0) {
-					mode[k] = data[i]; //puts mode as byte array but in reverse
-					k++;
-				} else {
-					break;
-				}
-			}
-
-			//to undo the reverse
-			byte[] temp = mode;
-			for(int i = 0; i < 6; i++) {
-				mode[i] = temp[6-i];
-			}
-
-			String modeAsString = new String(mode);
-
-			//make all lower case
-			String modeToCompare = modeAsString.toLowerCase();
-
-			//if it doesnt equal one of the modes
-			if(!(modeToCompare.equals("netascii") || modeToCompare.equals("octet"))) {
+			if(checkRequestFormat(data)) {
+				return null;
+			}else {
 				byte[] errCode = new byte[2];
-				errCode = intToByte(0);
-				return generateErrMessage(errCode, "Mode: " + modeAsString + " is unknown");
+				errCode = intToByte(4);
+				return generateErrMessage(errCode, "RRQ or WRQ incorrect");
 			}
-			//if everything else is fine, return null
-			return  null;
 		} else if(type[0] == 0 && type[1] == 3) {
 			//checking block number
 			if(data[2] == (byte)0 && data[3] == (byte)0) {
