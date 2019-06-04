@@ -25,7 +25,7 @@ public class ServerExitListener extends Thread {
 		}
 		if(cmd.equals("exit")) {
 			System.out.println("Server shutting down");
-			System.exit(0);
+			Server.serverOn = false;
 		}
 	}
 }

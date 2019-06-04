@@ -18,56 +18,61 @@ public class IntermediateHost {
 	private static int simulation; // 0 = no errors, 1 = lose data packet, 2 = delay packet, 3 = duplicate packet
 	private static int dup;
 	private int packetCounter = 1;
-	private int[] type = new int[2]; // {8 - DATA or 9 - ACK, Block Num}
+	private int[] type = new int[2];
+	private int request = 0;
 	
 	/**
-	 * Waits to recieve a message from the client and passes that on to the server
+	 * Waits to receive a message from the client and passes that on to the server
 	 */
 	public void recieveMessage(){
-		DatagramPacket tempPacket = null;
-		byte[] blockNum = null;
 		int packet = 0;
 		int tempPort = 0;
-		int request = 0; // 1 if RRQ and 2 if WRQ
+		boolean serverNotSet = true;
+		boolean clientNotSet = true ;
 		//while(true) {
 			switch (simulation) {
 				case 0: 
 					while(true) {
-				
-						//Passes the packet between the client to server and vice versa
-						recievePacket = com.recievePacket(sendRecieveSocket, 516);
-						tempPort = recievePacket.getPort();
-						
-						if(packet == 0) {
-							clientPort = tempPort;
-							if(mode == 1) {
-								System.out.println(com.verboseMode("Recieve from client", recievePacket));
-							}
-						}else if(!(tempPort == clientPort)) {
-							serverPort = tempPort;
-							if(mode == 1) {
-								System.out.println(com.verboseMode("Recieve from server", recievePacket));
-							}
-						}else if(tempPort == clientPort) {
-							if(mode == 1) {
-								System.out.println(com.verboseMode("Recieve from client", recievePacket));
-							}
+					//Passes the packet between the client to server and vice versa
+					recievePacket = com.recievePacket(sendRecieveSocket, 516);
+					tempPort = recievePacket.getPort();
+					if((packet == 0) && clientNotSet) { //if the client TID has not been set, do so
+						clientNotSet = false;
+						clientPort = tempPort;
+					}else if(!(tempPort == clientPort)&&serverNotSet) { //if the received Packet is not from the client and server has yet be set, set the server TID
+						serverNotSet  = false;
+						serverPort = tempPort;
+					}
+
+					if(tempPort == clientPort) {
+						if(mode == 1) {
+							System.out.println(com.verboseMode("Recieve from client", recievePacket));
 						}
+					}else if(tempPort ==  serverPort) {
+						if(mode == 1) {
+							System.out.println(com.verboseMode("Recieve from server", recievePacket));
+						}
+					}else { //If the received packed it from an unexpected TID, create a separate port to send the packet to the client through, this is the simulate the TID error on the client side
+						intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
+						rando.start();
+					}
+					if(tempPort  ==clientPort || tempPort  == serverPort) { //If the packet received was from an exptected TID, continue transfer as normal else allow the IntermediateHostRandomPort handle the rest
 						packet ++;
 						if(tempPort == clientPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), serverPort);
+							sendPacket = com.createPacket(recievePacket, serverPort);
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Send to Server", recievePacket));
 							}
 						}else if(tempPort == serverPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), clientPort);
+							sendPacket = com.createPacket(recievePacket, clientPort);
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Send to Client", recievePacket));
 							}
 						}
-										
-						
+
+
 						com.sendPacket(sendPacket, sendRecieveSocket);
+					}
 					}
 				
 				case 1:
@@ -76,28 +81,34 @@ public class IntermediateHost {
 						recievePacket = com.recievePacket(sendRecieveSocket, 516);
 						tempPort = recievePacket.getPort();
 						
-						if(packet == 0) {
-							request = (int)com.parsePacketType(recievePacket.getData())[1]; // 1 or 2 (RRQ or WRQ) to get block num
+						if((packet == 0) && clientNotSet) {
+							clientNotSet = false;
 							clientPort = tempPort;
+							request = (int)com.parsePacketType(recievePacket.getData())[1]; // 1 or 2 (RRQ or WRQ) to get block num
+						}else if(!(tempPort == clientPort)&&serverNotSet) {
+							serverNotSet  = false;
+							serverPort = tempPort;
+						}
+						
+						if(tempPort == clientPort) {
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieve from client", recievePacket));
 							}
-						}else if(!(tempPort == clientPort)) {
-							serverPort = tempPort;
+						}else if(tempPort ==  serverPort) {
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieve from server", recievePacket));
 							}
-						}else if(tempPort == clientPort) {
-							if(mode == 1) {
-								System.out.println(com.verboseMode("Recieve from client", recievePacket));
-							}
+						}else {
+							intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
+							rando.start();
 						}
+						
 						packet ++;
 						if(tempPort == clientPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), serverPort);
+							sendPacket = com.createPacket(recievePacket, serverPort);
 							
 						}else if(tempPort == serverPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), clientPort);
+							sendPacket = com.createPacket(recievePacket, clientPort);
 							
 						}
 						packetNumber = com.getBlockNum(request, type);
@@ -123,105 +134,116 @@ public class IntermediateHost {
 						recievePacket = com.recievePacket(sendRecieveSocket, 516);
 						tempPort = recievePacket.getPort();
 						
-						if(packet == 0) {
-							request = (int)com.parsePacketType(recievePacket.getData())[1]; // 1 or 2 (RRQ or WRQ) to get block num
+						if((packet == 0) && clientNotSet) {
+							clientNotSet = false;
 							clientPort = tempPort;
+							request = (int)com.parsePacketType(recievePacket.getData())[1]; // 1 or 2 (RRQ or WRQ) to get block num
+						}else if(!(tempPort == clientPort)&&serverNotSet) {
+							serverNotSet  = false;
+							serverPort = tempPort;
+						}
+						
+						if(tempPort == clientPort) {
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieve from client", recievePacket));
 							}
-						}else if(!(tempPort == clientPort)) {
-							serverPort = tempPort;
+						}else if(tempPort ==  serverPort) {
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieve from server", recievePacket));
 							}
-						}else if(tempPort == clientPort) {
-							if(mode == 1) {
-								System.out.println(com.verboseMode("Recieve from client", recievePacket));
-							}
+						}else {
+							intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
+							rando.start();
 						}
-						packet ++;
-						if(tempPort == clientPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), serverPort);
-						}else if(tempPort == serverPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), clientPort);
-						}
-						packetNumber = com.getBlockNum(request, type);
-						if(packetCounter != packetNumber) {
-							com.sendPacket(sendPacket, sendRecieveSocket);
-							packetCounter++;
-							if((mode == 1)&& (tempPort == clientPort)) {
-								System.out.println(com.verboseMode("Send to Server", recievePacket));
+						
+						if(tempPort  ==clientPort || tempPort  == serverPort) {
+							packet ++;
+							if(tempPort == clientPort) {
+								sendPacket = com.createPacket(recievePacket, serverPort);
+							}else if(tempPort == serverPort) {
+								sendPacket = com.createPacket(recievePacket, clientPort);
 							}
-							
-							if((mode == 1) && (tempPort == serverPort)) {
-								System.out.println(com.verboseMode("Send to Client", recievePacket));
-							}
-						}else{
-							//if we the packetCount has reached to the same value as the packetNumer we want to lose, the error simulator Starts a deyalSimulator that sends the packet after a specified period of time
+							packetNumber = com.getBlockNum(request, type);
+							if(packetCounter != packetNumber) {
+								com.sendPacket(sendPacket, sendRecieveSocket);
+								packetCounter++;
+								if((mode == 1)&& (tempPort == clientPort)) {
+									System.out.println(com.verboseMode("Send to Server", recievePacket));
+								}
+								if((mode == 1) && (tempPort == serverPort)) {
+									System.out.println(com.verboseMode("Send to Client", recievePacket));
+								}
+							}else{
+								//if we the packetCount has reached to the same value as the packetNumer we want to lose, the error simulator Starts a deyalSimulator that sends the packet after a specified period of time
 								packetCounter++;
 								System.out.println("Delaying packet...");
 								delaySimulator delay  = new delaySimulator(recievePacket, (long)packetDelay);
-								
+								delay.start();
 							}
+						}
 						
 						
 					}
 				case 3:
 					while(true) { 
-						//Recieving a message to from the client, prints the message, created a new packet to send to the server, prints that message for clarification and sends it the server
+						//Receiving a message to from the client, prints the message, created a new packet to send to the server, prints that message for clarification and sends it the server
+						//Same logic as case 0 except duplicates packet as needed1
 						recievePacket = com.recievePacket(sendRecieveSocket, 516);
 						tempPort = recievePacket.getPort();
 						
-						if(packet == 0) {
-							request = (int)com.parsePacketType(recievePacket.getData())[1]; // 1 or 2 (RRQ or WRQ) to get block num
+						if((packet == 0) && clientNotSet) {
+							clientNotSet = false;
 							clientPort = tempPort;
+							request = (int)com.parsePacketType(recievePacket.getData())[1]; // 1 or 2 (RRQ or WRQ) to get block num
+						}else if(!(tempPort == clientPort)&&serverNotSet) {
+							serverNotSet  = false;
+							serverPort = tempPort;
+						}
+						
+						if(tempPort == clientPort) {
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieve from client", recievePacket));
 							}
-						}else if(!(tempPort == clientPort)) {
-							serverPort = tempPort;
+						}else if(tempPort ==  serverPort) {
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieve from server", recievePacket));
 							}
-						}else if(tempPort == clientPort) {
-							if(mode == 1) {
-								System.out.println(com.verboseMode("Recieve from client", recievePacket));
-							}
+						}else {
+							intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
+							rando.start();
 						}
 						
-						packet ++;
-						if(tempPort == clientPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), serverPort);
-							
-						}else if(tempPort == serverPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), clientPort);
-							
-						}
-						packetNumber = com.getBlockNum(request, type);
-						if(packetCounter != packetNumber) {
-							com.sendPacket(sendPacket, sendRecieveSocket);
-							packetCounter++;
-							if((mode == 1)&& (tempPort == clientPort)) {
-								System.out.println(com.verboseMode("Send to Server", recievePacket));
+						if(tempPort  ==clientPort || tempPort  == serverPort) {
+							packet ++;
+							if(tempPort == clientPort) {
+								sendPacket = com.createPacket(recievePacket, serverPort);
+							}else if(tempPort == serverPort) {
+								sendPacket = com.createPacket(recievePacket, clientPort);
 							}
-							
-							if((mode == 1) && (tempPort == serverPort)) {
-								System.out.println(com.verboseMode("Send to Client", recievePacket));
-							}
-						}else {
-							//if we the packetCount has reached to the same value as the packetNumer we want to lose, the error simulator duplicates the packet dup number of times
-							for(int i = 0; i< dup; i ++) {
+							packetNumber = com.getBlockNum(request, type);
+							if(packetCounter != packetNumber) {
 								com.sendPacket(sendPacket, sendRecieveSocket);
+								packetCounter++;
 								if((mode == 1)&& (tempPort == clientPort)) {
-									System.out.println(com.verboseMode("Duplicate send to Server", recievePacket));
+									System.out.println(com.verboseMode("Send to Server", recievePacket));
 								}
-								
 								if((mode == 1) && (tempPort == serverPort)) {
-									System.out.println(com.verboseMode("duplicate Send to Client", recievePacket));
+									System.out.println(com.verboseMode("Send to Client", recievePacket));
 								}
+							}else {
+							//if we the packetCount has reached to the same value as the packetNumer we want to lose, the error simulator duplicates the packet dup number of times
+								for(int i = 0; i< dup; i ++) {
+									com.sendPacket(sendPacket, sendRecieveSocket);
+									if((mode == 1)&& (tempPort == clientPort)) {
+									System.out.println(com.verboseMode("Duplicate send to Server", recievePacket));
+									}
+								
+									if((mode == 1) && (tempPort == serverPort)) {
+										System.out.println(com.verboseMode("Duplicate Send to Client", recievePacket));
+									}
+								}
+								packetCounter++;
 							}
-							packetCounter++;
-							
 						}
 					}
 		}
@@ -240,9 +262,8 @@ public class IntermediateHost {
 		
 		if(simulation != 0) {
 			System.out.println("Which packet would you like to simulate the error");
-			//packetNumber = sc1.nextInt();
 			System.out.println("8 - DATA; 9 - ACK:");
-			type[0] = sc1.nextInt();
+			type [0] = sc1.nextInt();
 			System.out.println("Block Number:");
 			type[1] = sc1.nextInt();
 			

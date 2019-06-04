@@ -7,7 +7,6 @@ public class delaySimulator extends Thread{
 	private long delay;
 	public delaySimulator(DatagramPacket packet, long delay) {
 		com = new ComFunctions();
-		socket = com.startSocket();
 		this.packet = packet;
 		this.delay = delay;
 	}
@@ -16,6 +15,7 @@ public class delaySimulator extends Thread{
 		try{
 			//thread sleeps for delay milliseconds then sends the packet to target socket
 			Thread.sleep(delay);
+			socket = com.startSocket();
 			com.sendPacket(packet, socket);
 		}
 		catch(InterruptedException e){
