@@ -33,46 +33,45 @@ public class IntermediateHost {
 			switch (simulation) {
 				case 0: 
 					while(true) {
-					//Passes the packet between the client to server and vice versa
-					recievePacket = com.recievePacket(sendRecieveSocket, 516);
-					tempPort = recievePacket.getPort();
-					if((packet == 0) && clientNotSet) { //if the client TID has not been set, do so
-						clientNotSet = false;
-						clientPort = tempPort;
-					}else if(!(tempPort == clientPort)&&serverNotSet) { //if the received Packet is not from the client and server has yet be set, set the server TID
-						serverNotSet  = false;
-						serverPort = tempPort;
-					}
-
-					if(tempPort == clientPort) {
-						if(mode == 1) {
-							System.out.println(com.verboseMode("Recieve from client", recievePacket));
+						//Passes the packet between the client to server and vice versa
+						recievePacket = com.recievePacket(sendRecieveSocket, 516);
+						tempPort = recievePacket.getPort();
+						if((packet == 0) && clientNotSet) { //if the client TID has not been set, do so
+							clientNotSet = false;
+							clientPort = tempPort;
+						}else if(!(tempPort == clientPort)&&serverNotSet) { //if the received Packet is not from the client and server has yet be set, set the server TID
+							serverNotSet  = false;
+							serverPort = tempPort;
 						}
-					}else if(tempPort ==  serverPort) {
-						if(mode == 1) {
-							System.out.println(com.verboseMode("Recieve from server", recievePacket));
-						}
-					}else { //If the received packed it from an unexpected TID, create a separate port to send the packet to the client through, this is the simulate the TID error on the client side
-						intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
-						rando.start();
-					}
-					if(tempPort  ==clientPort || tempPort  == serverPort) { //If the packet received was from an exptected TID, continue transfer as normal else allow the IntermediateHostRandomPort handle the rest
-						packet ++;
+	
 						if(tempPort == clientPort) {
-							sendPacket = com.createPacket(recievePacket, serverPort);
 							if(mode == 1) {
-								System.out.println(com.verboseMode("Send to Server", recievePacket));
+								System.out.println(com.verboseMode("Recieve from client", recievePacket));
 							}
-						}else if(tempPort == serverPort) {
-							sendPacket = com.createPacket(recievePacket, clientPort);
+						}else if(tempPort ==  serverPort) {
 							if(mode == 1) {
-								System.out.println(com.verboseMode("Send to Client", recievePacket));
+								System.out.println(com.verboseMode("Recieve from server", recievePacket));
 							}
+						}else { //If the received packed it from an unexpected TID, create a separate port to send the packet to the client through, this is the simulate the TID error on the client side
+							intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
+							rando.start();
 						}
-
-
-						com.sendPacket(sendPacket, sendRecieveSocket);
-					}
+						if(tempPort  ==clientPort || tempPort  == serverPort) { //If the packet received was from an exptected TID, continue transfer as normal else allow the IntermediateHostRandomPort handle the rest
+							packet ++;
+							if(tempPort == clientPort) {
+								sendPacket = com.createPacket(recievePacket, serverPort);
+								if(mode == 1) {
+									System.out.println(com.verboseMode("Send to Server", recievePacket));
+								}
+							}else if(tempPort == serverPort) {
+								sendPacket = com.createPacket(recievePacket, clientPort);
+								if(mode == 1) {
+									System.out.println(com.verboseMode("Send to Client", recievePacket));
+								}
+							}
+	
+							com.sendPacket(sendPacket, sendRecieveSocket);
+						}
 					}
 				
 				case 1:
@@ -112,6 +111,13 @@ public class IntermediateHost {
 							
 						}
 						packetNumber = com.getBlockNum(request, type);
+						try {
+							Thread.sleep(5000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						System.out.println(packetNumber);
 						if (!(packetCounter == packetNumber)) {
 							
 							com.sendPacket(sendPacket, sendRecieveSocket);

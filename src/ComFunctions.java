@@ -546,7 +546,6 @@ public class ComFunctions {
 	}
 	
 	/**
-<<<<<<< HEAD
 	 * Converts an encoded block to the physical block number given a RRQ or WRQ (for example, DATA3 of RRQ is converted to Block Number 6)
 	 * @param req 1 if RRQ, 2 if WRQ
 	 * @param type {8 - DATA or 9 - ACK, Block Num} for example for DATA3 => {8, 3}
@@ -573,6 +572,7 @@ public class ComFunctions {
 				}
 				break;
 		}
+		//System.out.println(blocknum);
 		return blocknum;
 	}
 

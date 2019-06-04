@@ -291,9 +291,9 @@ public class Client {
 		
 		System.out.println("Select Operation: Read [0], Write[1]");
 		int rwMode = sc.nextInt();
-		System.out.println("Type in file name with file extension i.e '.txt'");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        String fileName = null;
+		//System.out.println("Type in file name with file extension i.e '.txt'");
+        //BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        //String fileName = null;
 //		try {
 //			fileName = reader.readLine();
 //		} catch (IOException e) {

@@ -54,11 +54,10 @@ public class ServerWorker extends Thread {
 			DatagramSocket errorSocket = com.startSocket();
 			com.sendPacket(errorPacket, errorSocket);
 			errorSocket.close();
-			return  false;
+			return false;
 		}
 		
 	}
-	
 	
 	/**
 	 * Sends the contents over to the client
