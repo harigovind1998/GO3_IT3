@@ -129,7 +129,7 @@ public class ServerWorker extends Thread {
 										blockNum ++ ;
 										msg = com.generateDataPacket(com.intToByte(blockNum), com.getBlock(blockNum, fileByteReadArray));
 										SendingResponse = com.createPacket(msg, interHostPort);
-										com.printMessage("Sending", msg);
+										
 										break innerSend;
 									}else {
 										System.out.println("Wrong block recieved, continue waiting...\n");
@@ -197,9 +197,12 @@ public class ServerWorker extends Thread {
 							msg = com.parseForError(RecievedResponse);
 							
 							if(msg!= null) {
-								if(msg[3]==4) {
+								if(msg[3]==4) { //if the Packet received was the wrong format, send the error to the client and close connection
 									SendingResponse = com.createPacket(msg,interHostPort);
 									com.sendPacket(SendingResponse, SendRecieveSocket);
+									if(mode==1) {
+										System.out.println(com.verboseMode("Sending Packet:", SendingResponse));
+									}
 									break writeLoop;
 								}
 							}
@@ -207,6 +210,9 @@ public class ServerWorker extends Thread {
 							if(RecievedResponse.getPort() != interHostPort) {
 								msg = com.generateErrMessage(new byte[] {0,5}, "");
 								SendingResponse = com.createPacket(msg, RecievedResponse.getPort());
+								if(mode==1) {
+									System.out.println("Packet source TID incorrect");
+								}
 								break mainLoop;
 							}
 							
@@ -216,11 +222,11 @@ public class ServerWorker extends Thread {
 							incomingBlock[0] = RecievedResponse.getData()[2];
 							incomingBlock[1] = RecievedResponse.getData()[3];
 							if((blockNum == ByteBuffer.wrap(incomingBlock).getShort()) && com.getPacketType(RecievedResponse) == 3) {
-								com.writeArrayIntoFile(com.parseBlockData(RecievedResponse.getData()), Paths.get("./Server/" + fileName));
+								com.writeArrayIntoFile(com.parseBlockData(RecievedResponse), Paths.get("./Server/" + fileName));
 								last = RecievedResponse.getData()[RecievedResponse.getLength() -1];
 								msg = com.generateAckMessage(com.intToByte(blockNum));
 								SendingResponse = com.createPacket(msg, interHostPort);
-								if(last == 0){ //Checks for if the Data Packet is the last packet
+								if(RecievedResponse.getLength()<512){ //Checks for if the Data Packet is the last packet
 									com.sendPacket(SendingResponse, SendRecieveSocket);
 									if(mode == 1) {
 										System.out.println(com.verboseMode("Sent", SendingResponse));
@@ -230,7 +236,7 @@ public class ServerWorker extends Thread {
 								}
 								++blockNum;
 								break innerLoop; //The correct data Packet was received so it leaves the inner loop
-							}else if((blockNum< ByteBuffer.wrap(incomingBlock).getShort()) &&com.getPacketType(RecievedResponse) == 3) { // Missed a block
+							}else if((blockNum< ByteBuffer.wrap(incomingBlock).getShort()) && com.getPacketType(RecievedResponse) == 3) { // Missed a block
 								msg  = com.generateErrMessage(new byte[] {0,4},"");
 								SendingResponse = com.createPacket(msg, interHostPort);
 								com.sendPacket(SendingResponse, SendRecieveSocket);
@@ -239,6 +245,10 @@ public class ServerWorker extends Thread {
 									System.out.println("Ending Connection.");
 								}
 								break writeLoop;
+							}else if (com.getPacketType(RecievedResponse)==3){
+								if(mode==1) {
+									System.out.println("Received duplicate Data packet");
+								}
 							}else if(com.getPacketType(RecievedResponse) == 5) { //If it an error packet, do things accordingly 
 								if(RecievedResponse.getData()[2]==0 && RecievedResponse.getData()[3]==5) {
 									System.out.println("Terminating due to receiving error packet 5");

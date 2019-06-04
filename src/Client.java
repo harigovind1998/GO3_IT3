@@ -24,9 +24,9 @@ public class Client {
 	private static JFrame frame = new JFrame();
 	private static JTextArea area = new JTextArea();
 	private static JScrollPane scroll;
-	private static byte[] messageReceived;
+	
 	public static  Path f2path = Paths.get("./Client/returnTest2.txt");
-	private int fileLength;
+	
 	private static byte[] rrq = {0,1};
 	private static byte[] wrq = {0,2};
 	private static int mode, simMode;
@@ -131,7 +131,7 @@ public class Client {
 
 								if(com.getPacketType(recievePacket)== 4) {
 									if(com.CheckAck(recievePacket, blockNum)){
-										if(sendPacket.getData()[sendPacket.getLength() -1] == 0 && sendPacket.getData()[0] == 0 && sendPacket.getData()[1] == 3 ){ //Checks to see if the file has come to an end
+										if(sendPacket.getLength() < 512 && sendPacket.getData()[1] == 3 ){ //Checks to see if the file has come to an end
 											area.append("End of File reached!\n");
 											break mainLoop;
 										}	
@@ -236,7 +236,6 @@ public class Client {
 					dataReceived = com.parseBlockData(recievePacket);		
 					com.writeArrayIntoFile(dataReceived, f2path);
 					area.append("writing to file\n");
-					com.printMessage("Received", dataReceived);
 					msg = com.generateAckMessage(com.intToByte(blockNum));
 					sendPacket = com.createPacket(msg, interHostPort);
 					blockNum++;

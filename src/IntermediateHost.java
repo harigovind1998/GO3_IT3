@@ -57,12 +57,12 @@ public class IntermediateHost {
 					if(tempPort  ==clientPort || tempPort  == serverPort) { //If the packet received was from an exptected TID, continue transfer as normal else allow the IntermediateHostRandomPort handle the rest
 						packet ++;
 						if(tempPort == clientPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), serverPort);
+							sendPacket = com.createPacket(recievePacket, serverPort);
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Send to Server", recievePacket));
 							}
 						}else if(tempPort == serverPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), clientPort);
+							sendPacket = com.createPacket(recievePacket, clientPort);
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Send to Client", recievePacket));
 							}
@@ -102,10 +102,10 @@ public class IntermediateHost {
 						
 						packet ++;
 						if(tempPort == clientPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), serverPort);
+							sendPacket = com.createPacket(recievePacket, serverPort);
 							
 						}else if(tempPort == serverPort) {
-							sendPacket = com.createPacket(recievePacket.getData(), clientPort);
+							sendPacket = com.createPacket(recievePacket, clientPort);
 							
 						}
 					
@@ -155,9 +155,9 @@ public class IntermediateHost {
 						if(tempPort  ==clientPort || tempPort  == serverPort) {
 							packet ++;
 							if(tempPort == clientPort) {
-								sendPacket = com.createPacket(recievePacket.getData(), serverPort);
+								sendPacket = com.createPacket(recievePacket, serverPort);
 							}else if(tempPort == serverPort) {
-								sendPacket = com.createPacket(recievePacket.getData(), clientPort);
+								sendPacket = com.createPacket(recievePacket, clientPort);
 							}
 							if(packetCounter != packetNumber) {
 								com.sendPacket(sendPacket, sendRecieveSocket);
@@ -210,9 +210,9 @@ public class IntermediateHost {
 						if(tempPort  ==clientPort || tempPort  == serverPort) {
 							packet ++;
 							if(tempPort == clientPort) {
-								sendPacket = com.createPacket(recievePacket.getData(), serverPort);
+								sendPacket = com.createPacket(recievePacket, serverPort);
 							}else if(tempPort == serverPort) {
-								sendPacket = com.createPacket(recievePacket.getData(), clientPort);
+								sendPacket = com.createPacket(recievePacket, clientPort);
 							}
 			
 							if(packetCounter != packetNumber) {
@@ -233,7 +233,7 @@ public class IntermediateHost {
 									}
 								
 									if((mode == 1) && (tempPort == serverPort)) {
-										System.out.println(com.verboseMode("duplicate Send to Client", recievePacket));
+										System.out.println(com.verboseMode("Duplicate Send to Client", recievePacket));
 									}
 								}
 								packetCounter++;
