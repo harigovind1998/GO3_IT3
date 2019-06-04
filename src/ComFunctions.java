@@ -485,6 +485,7 @@ public class ComFunctions {
 	}	
 	
 	
+	
 	public byte[] parsePacketType(byte[] packetType) {
 		byte[] type = new byte[2];
 		if(packetType[0] ==  (byte)0 && packetType[1] == (byte)1) {
@@ -506,6 +507,11 @@ public class ComFunctions {
 		return type;
 	}
 	
+	/**
+	 * Get the packet  type:  read = 1; write = 2 ; Data  =  3;  ACK  = 4;  Error  =  5
+	 * @param packetType packet that is needs parsing 
+	 * @return
+	 */
 	public int getPacketType(DatagramPacket packet) {
 		byte[] type = packet.getData();
 		int temp = 0;

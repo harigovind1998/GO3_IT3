@@ -23,7 +23,6 @@ public class IntermediateHost {
 	 * Waits to receive a message from the client and passes that on to the server
 	 */
 	public void recieveMessage(){
-		
 		int packet = 0;
 		int tempPort = 0;
 		boolean serverNotSet = true;
@@ -32,19 +31,17 @@ public class IntermediateHost {
 			switch (simulation) {
 				case 0: 
 					while(true) {
-				
 					//Passes the packet between the client to server and vice versa
 					recievePacket = com.recievePacket(sendRecieveSocket, 516);
 					tempPort = recievePacket.getPort();
-					
-					if((packet == 0) && clientNotSet) {
+					if((packet == 0) && clientNotSet) { //if the client TID has not been set, do so
 						clientNotSet = false;
 						clientPort = tempPort;
-					}else if(!(tempPort == clientPort)&&serverNotSet) {
+					}else if(!(tempPort == clientPort)&&serverNotSet) { //if the received Packet is not from the client and server has yet be set, set the server TID
 						serverNotSet  = false;
 						serverPort = tempPort;
 					}
-					
+
 					if(tempPort == clientPort) {
 						if(mode == 1) {
 							System.out.println(com.verboseMode("Recieve from client", recievePacket));
@@ -53,26 +50,27 @@ public class IntermediateHost {
 						if(mode == 1) {
 							System.out.println(com.verboseMode("Recieve from server", recievePacket));
 						}
-					}else {
+					}else { //If the received packed it from an unexpected TID, create a separate port to send the packet to the client through, this is the simulate the TID error on the client side
 						intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
 						rando.start();
 					}
-					
-					packet ++;
-					if(tempPort == clientPort) {
-						sendPacket = com.createPacket(recievePacket.getData(), serverPort);
-						if(mode == 1) {
-							System.out.println(com.verboseMode("Send to Server", recievePacket));
+					if(tempPort  ==clientPort || tempPort  == serverPort) { //If the packet received was from an exptected TID, continue transfer as normal else allow the IntermediateHostRandomPort handle the rest
+						packet ++;
+						if(tempPort == clientPort) {
+							sendPacket = com.createPacket(recievePacket.getData(), serverPort);
+							if(mode == 1) {
+								System.out.println(com.verboseMode("Send to Server", recievePacket));
+							}
+						}else if(tempPort == serverPort) {
+							sendPacket = com.createPacket(recievePacket.getData(), clientPort);
+							if(mode == 1) {
+								System.out.println(com.verboseMode("Send to Client", recievePacket));
+							}
 						}
-					}else if(tempPort == serverPort) {
-						sendPacket = com.createPacket(recievePacket.getData(), clientPort);
-						if(mode == 1) {
-							System.out.println(com.verboseMode("Send to Client", recievePacket));
-						}
+
+
+						com.sendPacket(sendPacket, sendRecieveSocket);
 					}
-									
-					
-					com.sendPacket(sendPacket, sendRecieveSocket);
 					}
 				
 				case 1:
@@ -183,7 +181,8 @@ public class IntermediateHost {
 					}
 				case 3:
 					while(true) { 
-						//Recieving a message to from the client, prints the message, created a new packet to send to the server, prints that message for clarification and sends it the server
+						//Receiving a message to from the client, prints the message, created a new packet to send to the server, prints that message for clarification and sends it the server
+						//Same logic as case 0 except duplicates packet as needed
 						recievePacket = com.recievePacket(sendRecieveSocket, 516);
 						tempPort = recievePacket.getPort();
 						

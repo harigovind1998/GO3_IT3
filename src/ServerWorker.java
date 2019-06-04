@@ -282,7 +282,7 @@ public class ServerWorker extends Thread {
 		com = new ComFunctions();
 		SendRecieveSocket = com.startSocket();
 		try {
-			SendRecieveSocket.setSoTimeout(10000);
+			SendRecieveSocket.setSoTimeout(100000);
 		} catch (SocketException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

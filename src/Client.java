@@ -45,7 +45,7 @@ public class Client {
 		com = new ComFunctions();
 		sendReceiveSocket = com.startSocket(); //Socket that is used to send and receive packets from the server/errorSimulator
 		try {
-			sendReceiveSocket.setSoTimeout(10000); //Setting a socket timeout for receive, used mostly re-send packets
+			sendReceiveSocket.setSoTimeout(100000); //Setting a socket timeout for receive, used mostly re-send packets
 		} catch (SocketException e1) {
 			e1.printStackTrace();
 		}
