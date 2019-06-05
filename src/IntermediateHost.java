@@ -488,9 +488,77 @@ public class IntermediateHost {
 							}
 						}
 					}
+				case 7:
+					boolean lastDataPacket= false;
+					while(true) {
+						//Passes the packet between the client to server and vice versa
+						recievePacket = com.recievePacket(sendRecieveSocket, 516);
+						tempPort = recievePacket.getPort();
+						if((packet == 0) && clientNotSet) {
+							clientNotSet = false;
+							clientPort = tempPort;
+						}else if(!(tempPort == clientPort)&&serverNotSet) {
+							serverNotSet  = false;
+							serverPort = tempPort;
+						}
+						
+						if(tempPort == clientPort) {
+							if(mode == 1) {
+								System.out.println(com.verboseMode("Recieve from client", recievePacket));
+							}
+						}else if(tempPort ==  serverPort) {
+							if(mode == 1) {
+								System.out.println(com.verboseMode("Recieve from server", recievePacket));
+							}
+						}else {
+							intermediateHostRandomPort rando = new intermediateHostRandomPort(recievePacket, clientPort, sendRecieveSocket);
+							rando.start();
+						}
+						
+						
+						
+						if(com.getPacketType(recievePacket) == 3) { //check  to see if the last data packet was sent through
+							if(recievePacket.getLength()<512){ //Checks for if the Data Packet is the last packet
+								lastDataPacket = true;
+							}
+						}
+						
+						
+						
+						
+						if(lastDataPacket && com.getPacketType(recievePacket) == 4) { //if the last has not yet passed 
+							if(mode ==1) {
+								System.out.println("Lost the last Ack packet");
+							}
+						}else {
+							if(tempPort ==clientPort || tempPort  == serverPort) { //If the packet received was from an exptected TID, continue transfer as normal else allow the IntermediateHostRandomPort handle the rest
+								if(tempPort == clientPort) {
+									if(recievePacket.getData()[0]==0 && (recievePacket.getData()[1]==1 || recievePacket.getData()[1]==2)) {
+										sendPacket = com.createPacket(recievePacket, 69);
+									}else {
+										sendPacket = com.createPacket(recievePacket, serverPort);
+									}
+									if(mode == 1) {
+										System.out.println(com.verboseMode("Send to Server", recievePacket));
+									}
+								}else if(tempPort == serverPort) {
+									sendPacket = com.createPacket(recievePacket, clientPort);
+									if(mode == 1) {
+										System.out.println(com.verboseMode("Send to Client", recievePacket));
+									}
+								}
+							}
+							
+							com.sendPacket(sendPacket, sendRecieveSocket);
+							
+						}
+					
+						}
+					}
+					
 					
 		}
-	}
+	
 	
 	public IntermediateHost() {
 		// TODO Auto-generated constructor stub
@@ -499,11 +567,11 @@ public class IntermediateHost {
 		System.out.println("Select Mode : Quiet [0], Verbose [1]");
 		mode = sc1.nextInt();
 		
-		System.out.println("Select Mode : Normal [0], Lost Packet [1], Delayed Packet [2], Duplicate Packet [3], Damage entire Packet [4], Damage WRQ/RRQ packet [5], Damage ACK/DATA packet[6] ");
+		System.out.println("Select Mode : Normal [0], Lost Packet [1], Delayed Packet [2], Duplicate Packet [3], Damage entire Packet [4], Damage WRQ/RRQ packet [5], Damage ACK/DATA packet[6], Lose last ACK packet[7] ");
 		simulation = sc1.nextInt();
 		
 		
-		if(simulation != 0) {
+		if(simulation != 0 && simulation !=7) {
 			System.out.println("Which packet would you like to simulate the error (ignore for Damage WRQ/RRQ damage as it will be the first packet");
 			packetNumber = sc1.nextInt();
 			
