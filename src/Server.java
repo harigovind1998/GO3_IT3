@@ -9,27 +9,23 @@ public class Server {
 	DatagramPacket recievePacket, errorPacket;
 	ComFunctions com;
 	int mode;
-	public static boolean serverRun = true;
+
+	public static boolean serverOn = true;
+
 	/**
 	 * loops and keeps serving all the incoming requests
 	 */
 	public void serve() {
-		while(serverRun) {
+
+		while(serverOn) {
+
 			recievePacket = com.recievePacket(recieveSocket, REQUEST_SIZE); 
 			//if the received packet is valid, passes the message onto a worker thread that takes care of all request until it is complete 
-			if (com.checkMessage(recievePacket.getData())) {
-				if(mode == 1) {
-					System.out.println(com.verboseMode("Recieve", recievePacket));
-				}
-				ServerWorker worker = new ServerWorker(Integer.toString((recievePacket.getPort())), recievePacket,mode);
-				worker.start();
-			}else {
-				System.out.println("Error Packet");
-				errorPacket = com.createPacket(com.generateErrMessage(new byte[] {0, 0}, "The Read or write request was of invalid format"),recievePacket.getPort());
-				errorSocket = com.startSocket();
-				com.sendPacket(errorPacket, errorSocket);
-				errorSocket.close();
-			}			
+			if(mode == 1) {
+				System.out.println(com.verboseMode("Main server Recieved", recievePacket));
+			}
+			ServerWorker worker = new ServerWorker(Integer.toString((recievePacket.getPort())), recievePacket,mode);
+			worker.start();
 		}
 	}
 	
@@ -43,8 +39,8 @@ public class Server {
 		mode = sc.nextInt();
 		com = new ComFunctions();
 		recieveSocket = com.startSocket(69);
-		ServerExitListener exit = new ServerExitListener("Exit listener");
-		exit.start();
+		ServerExitListener exitListener = new ServerExitListener("Exit listener");
+		exitListener.start();
 	}
 
 	

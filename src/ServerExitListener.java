@@ -24,8 +24,10 @@ public class ServerExitListener extends Thread {
 			e.printStackTrace();
 		}
 		if(cmd.equals("exit")) {
-			System.out.println("Server shutting down, no longer taking any more requests");
-			Server.serverRun = false;
+
+			System.out.println("Server shutting down");
+			Server.serverOn = false;
+
 		}
 	}
 }
