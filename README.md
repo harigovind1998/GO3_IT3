@@ -12,8 +12,8 @@ Java (using preferably Eclipse IDE)
 
 ## Running
 	1. Open 3 different consoles in eclipse.
-           **To switch between read and write, Comment out line 242 and uncomment line 244 in Client.java (this will do a
-	   concurrent read and write). And vise versa**
+	   (To switch between read and write, Comment out line 242 and uncomment line 244 in Client.java (this will do a
+	   concurrent read and write). And vise versa)
 	2. Run the Server; Type 1 for verbose and 0 for silent in the console; type "exit" whenever in the console to end the
 	   server
 	3. Run the Intermediate Host; Type 1 for verbose and 0 for silent in the console and select the approprioate error you
