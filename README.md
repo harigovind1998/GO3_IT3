@@ -12,19 +12,25 @@ Java (using preferably Eclipse IDE)
 
 ## Running
 	1. Open 3 different consoles in eclipse.
-        **To switch between read and write, Comment out line 242 and uncomment line 244 in Client.java (this will do a concurrent read and write). And vise versa**
-	2. Run the Server; Type 1 for verbose and 0 for silent in the console; type "exit" whenever in the console to end the server
-	3. Run the Intermediate Host; Type 1 for verbose and 0 for silent in the console and select the approprioate error you want to simulate, 0 if you dont want to simulate any errors
+           **To switch between read and write, Comment out line 242 and uncomment line 244 in Client.java (this will do a
+	   concurrent read and write). And vise versa**
+	2. Run the Server; Type 1 for verbose and 0 for silent in the console; type "exit" whenever in the console to end the
+	   server
+	3. Run the Intermediate Host; Type 1 for verbose and 0 for silent in the console and select the approprioate error you
+	   want to simulate, 0 if you dont want to simulate any errors (0 for Normal Operation; 1 for Losing Packet; 2 for
+	   Delaying Packet; 3 for Duplicating Packet; 4 for Damaging Packet)
 	4. Run the Client; Type 1 for verbose and 0 for silent in the console
 	5. Switch each Console Window to show the Client, Intermediate Host, and Server Individually
-	7. View results in External Window (i.e. JFrame)
-    8. If you want to rerun it, ensure that the only file in ./Client is writeTest.txt and in ./Server is readTest.txt
+	6. View results in External Window (i.e. JFrame)
+    	7. If you want to rerun it, ensure that the only file in ./Client is writeTest.txt and in ./Server is readTest.txt
 
 ### Testing concurrent File transfers
-    1. This one needs a little modification from you. Delete all the files that were created from the previous file transfer tests (./Client should only have writeTest.txt and ./Server should only have readText.txt). 
+    1. This one needs a little modification from you. Delete all the files that were created from the previous file transfer
+       tests (./Client should only have writeTest.txt and ./Server should only have readText.txt). 
     2. Start the server, intermediateHost following instructions under Running
     3. Start the client but do not choose the verbose yet
-    4. Modify the interHostPort in the intermediateHost.java and client.java to another number that not 23 BUT the new port chosen must both be the same and cannot be 23 or 69
+    4. Modify the interHostPort in the intermediateHost.java and client.java to another number that not 23 BUT the new port
+       chosen must both be the same and cannot be 23 or 69
     5. Comment out line 242 and uncomment line 244 in Client.java (this will do a concurrent read and write)
     6. Start the modified intermediateHost with the changed port and choose verbose or non verbose
     7. Start the modified client
@@ -32,9 +38,11 @@ Java (using preferably Eclipse IDE)
 
 ## Files
     1. Client.java; Contains the code that controls the client portal 
-    2. ComFunctions.java; Contains common functions that are shared between the client, server and the IntermediateHost(A.K.A error simulator)
+    2. ComFunctions.java; Contains common functions that are shared between the client, server and the IntermediateHost(A.K.A
+       error simulator)
     3. delaySimulator.jav; used to delay a target packet my n milliseonds, used in error simulation
-    3. IntermediateHost.java; Error Simulator, for now it just passed the messages between the serverWorkerThread/Server and client
+    3. IntermediateHost.java; Error Simulator, for now it just passed the messages between the serverWorkerThread/Server and
+       client
     4. Server.java; Handles all the in initial incoming requests, then passes the job on to a sperate thread
     5. ServerExitListener.java; thread that listens for exit command in the console
     6. ServerWorker.java; Handles the reads and writes
@@ -43,13 +51,11 @@ Java (using preferably Eclipse IDE)
     8. ./Server/readTest.txt; sample file used for rrq
 
 ## Built With
-
 	* Java
 	* Eclipse
 
 ## Authors
-
-	* Steven Zhou
 	* Hariprasadh Ravichandran Govindasamy
 	* Tarun Kalikivaya
 	* Yohannes Kussia
+	* Steven Zhou
