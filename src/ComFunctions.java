@@ -100,6 +100,25 @@ public class ComFunctions {
 	}
 	
 	/**
+	 * Creates an DatagramPocket to be passed through a DatagramSocket.
+	 * @param msg Byte array message
+	 * @param address address of the destination socket
+	 * @param port port number of the destination socket
+	 * @return DatagramPacket that can be used for sending
+	 */
+	public DatagramPacket createPacket(DatagramPacket packet, int port ) {
+		DatagramPacket sendPacket = null;
+		try {
+			sendPacket = new DatagramPacket(packet.getData(), packet.getLength(), InetAddress.getLocalHost(), port);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return sendPacket;		
+		
+	}
+	
+	/**
 	 * Creates an DatagramPocket used to handle DatagramSocket receive.
 	 * @param len desired length of the packet
 	 * @return new empty DatatgramPacket of desired length
@@ -376,19 +395,19 @@ public class ComFunctions {
 		}
 	}
 	
-	/**
-	 * Takes the packet sent and parses out the data
-	 * @param arr the array of bytes being sent
-	 * @return data only the data of the array sent
-	 */
-	public byte[] parseBlockData(byte[] arr) {
-		byte[] data = new byte[arr.length-4];
-		for(int i = 4; i < arr.length; i++) {
-			data[i-4] = arr[i];
-		}
-		return data;
-		
-	}
+//	/**
+//	 * Takes the packet sent and parses out the data
+//	 * @param arr the array of bytes being sent
+//	 * @return data only the data of the array sent
+//	 */
+//	public byte[] parseBlockData(byte[] arr) {
+//		byte[] data = new byte[arr.length-4];
+//		for(int i = 4; i < arr.length; i++) {
+//			data[i-4] = arr[i];
+//		}
+//		return data;
+//		
+//	}
 	
 	/**
 	 * Takes the packet sent and parses out the data
@@ -463,13 +482,13 @@ public class ComFunctions {
 			byte[] blockNum = new byte[2];
 			blockNum[0] = packetData[2];
 			blockNum[1] = packetData[3];
-			int byteCounter = 0;
-			byte[] fileBlock = parseBlockData(packetData);
-			for(byte b: fileBlock) {
-				if(b != (byte)0) {
-					byteCounter++;
-				}
-			}
+//			int byteCounter = 0;
+//			byte[] fileBlock = parseBlockData(packetData);
+//			for(byte b: fileBlock) {
+//				if(b != (byte)0) {
+//					byteCounter++;
+//				}
+//			}
 			verbose += "DATA; BlockNumber: " + ByteBuffer.wrap(blockNum).getShort() + "; Numer of Bytes: " + packet.getLength() + "\n";     
 		} else if (packetData[0] ==  (byte)0 && packetData[1] == (byte)4) {
 			byte[] blockNum = new byte[2];
@@ -541,52 +560,91 @@ public class ComFunctions {
 		return temp;
 	}
 	
+//	public byte[] parseForError(DatagramPacket packet) {
+//		byte[] data = packet.getData();
+//		byte[] type = parsePacketType(data);
+//		
+//		if ((type[0] == 0 && type[1] == 1) || (type[0] == 0 && type[1] == 2)) {
+//			//byte[] mode = new byte[8];
+//			int j = 0; // used to determine length of the mode
+//			for(int i = data.length-2; i > 0; i--) {
+//				if(data[i] != (byte)0) {
+//					//mode[j] = data[i]; //puts mode as byte array but in reverse
+//					j++;
+//				} else {
+//					break;
+//				}
+//			}
+//			
+//			byte[] mode = new byte[j];
+//			int k = 0;
+//			for(int i = data.length-2; i > 0; i--) {
+//				if(data[i] != (byte)0) {
+//					mode[k] = data[i]; //puts mode as byte array but in reverse
+//					k++;
+//				} else {
+//					break;
+//				}
+//			}
+//			
+//			//to undo the reverse
+//			byte[] temp = mode;
+//			for(int i = 0; i < 6; i++) {
+//				mode[i] = temp[6-i];
+//			}
+//			
+//			String modeAsString = new String(mode);
+//			
+//			//make all lower case
+//			String modeToCompare = modeAsString.toLowerCase();
+//			
+//			//if it doesnt equal one of the modes
+//			if(!(modeToCompare.equals("netascii") || modeToCompare.equals("octet"))) {
+//				byte[] errCode = new byte[2];
+//				errCode = intToByte(0);
+//				return generateErrMessage(errCode, "Mode: " + modeAsString + " is unknown");
+//			}
+//			//if everything else is fine, return null
+//			return  null;
+//		} else if((type[0] == 0 && type[1] == 3) || (type[0] == 0 && type[1] == 4) || (type[0] == 0 && type[1] == 5)) {
+//			//do nothing for now; not sure if i need to check for errors in ack and data 
+//			//other than if they are actually ack or data
+//			return null;
+//		}
+//		//other operation codes
+//		byte[] errCode = new byte[2];
+//		errCode = intToByte(4);
+//		String typeAsString = new String(type);
+//		return generateErrMessage(errCode, "Type: " + typeAsString + " is an invalid TFTP operation");
+//	}
+//	
+	
+	
 	public byte[] parseForError(DatagramPacket packet) {
 		byte[] data = packet.getData();
 		byte[] type = parsePacketType(data);
-		
+		int len = packet.getLength();
+
 		if ((type[0] == 0 && type[1] == 1) || (type[0] == 0 && type[1] == 2)) {
-			//byte[] mode = new byte[8];
-			int j = 0; // used to determine length of the mode
-			for(int i = data.length-2; i > 0; i--) {
-				if(data[i] != (byte)0) {
-					//mode[j] = data[i]; //puts mode as byte array but in reverse
-					j++;
-				} else {
-					break;
+			if(checkRequestFormat(data)) {
+				byte[] mode = parseMode(data);
+				String modeAsString = new String(mode);
+				
+				//make all lower case
+				String modeToCompare = modeAsString.toLowerCase();
+					
+				//if it doesnt equal one of the modes
+				if(!(modeToCompare.equals("netascii") || modeToCompare.equals("octet"))) {
+					byte[] errCode = new byte[2];
+					errCode = intToByte(0);
+					return generateErrMessage(errCode, "Mode: " + modeAsString + " is unknown");
 				}
-			}
-			
-			byte[] mode = new byte[j];
-			int k = 0;
-			for(int i = data.length-2; i > 0; i--) {
-				if(data[i] != (byte)0) {
-					mode[k] = data[i]; //puts mode as byte array but in reverse
-					k++;
-				} else {
-					break;
-				}
-			}
-			
-			//to undo the reverse
-			byte[] temp = mode;
-			for(int i = 0; i < 6; i++) {
-				mode[i] = temp[6-i];
-			}
-			
-			String modeAsString = new String(mode);
-			
-			//make all lower case
-			String modeToCompare = modeAsString.toLowerCase();
-			
-			//if it doesnt equal one of the modes
-			if(!(modeToCompare.equals("netascii") || modeToCompare.equals("octet"))) {
+				return null;
+			}else {
 				byte[] errCode = new byte[2];
-				errCode = intToByte(0);
-				return generateErrMessage(errCode, "Mode: " + modeAsString + " is unknown");
+				errCode = intToByte(4);
+				return generateErrMessage(errCode, "RRQ or WRQ incorrect");
 			}
-			//if everything else is fine, return null
-			return  null;
 		} else if(type[0] == 0 && type[1] == 3) {
 			//checking block number
 			if(data[2] == (byte)0 && data[3] == (byte)0) {
@@ -596,33 +654,70 @@ public class ComFunctions {
 			}
 			return null;
 		} else if (type[0] == 0 && type[1] == 4) {
-			//checking block number
-			if(data[2] == (byte)0 && data[3] == (byte)0) {
-				byte[] errCode = new byte[2];
-				errCode = intToByte(4);
-				return generateErrMessage(errCode, "Invalid block number. Attempted block number: 00");
-			}
-			//check length (should be 4)
-			if(data.length != 4) {
+
+			if(packet.getLength()!= 4) {
+				System.out.print(packet.getLength());
 				byte[] errCode = new byte[2];
 				errCode = intToByte(4);
 				return generateErrMessage(errCode, "Length of ACK Packet is not 4 bytes");
 			}
 			return null;
 		} else if (type[0] == 0 && type[1] == 5) {
-			int lastIndexOfPacket = data.length - 1;
-			if(lastIndexOfPacket != (byte)0) {
+			int lastIndexOfPacket = data[len - 1];
+			if(lastIndexOfPacket != (byte)0 || len<4) {
 				byte[] errCode = new byte[2];
 				errCode = intToByte(4);
 				return generateErrMessage(errCode, "Error Packet does not end with byte 0");
-			}
+			} 
 			return null;
-		} else {
+		}else {
 			//other operation codes
 			byte[] errCode = new byte[2];
 			errCode = intToByte(4);
 			String typeAsString = new String(type);
 			return generateErrMessage(errCode, "Type: " + typeAsString + " is an invalid TFTP operation");
 		}
+		
+	}
+	
+	public byte[] parseMode(byte[] msg) {
+		int count = 0;
+		int modeIndex = 0;
+		int modeLength = 0;
+		byte[] modeAsByteArr;
+		
+		//used to get the length of a the mode
+		for (int i = 2; i < msg.length; ++i) { 
+			if (msg[i] == 0 && (msg[i] != msg[i - 1])) {
+				++count;
+				
+			}
+			if(count == 1) {
+				modeLength++;
+			}
+			
+			if(count == 2) {
+				break;
+			}
+		}
+		
+		modeAsByteArr = new byte[modeLength];
+		
+		//used to append to the byte array when applicable
+		for (int i = 2; i < msg.length; ++i) { 
+			if (msg[i] == 0 && (msg[i] != msg[i - 1])) {
+				++count;
+				
+			}
+			if(count == 1) {
+				modeAsByteArr[modeIndex] = msg[i];
+				modeIndex++;
+			}
+			
+			if(count == 2) {
+				break;
+			}
+		}
+		return modeAsByteArr;
 	}
 }
