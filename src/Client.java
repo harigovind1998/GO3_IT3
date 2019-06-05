@@ -326,19 +326,19 @@ public class Client {
 		int rwMode = sc.nextInt();
 		System.out.println("Type in file name with file extension i.e '.txt'");
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-//        String fileName = null;
-//		try {
-//			fileName = reader.readLine();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
+        String fileName = null;
+		try {
+			fileName = reader.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 		sc.close();
 		Client client = new Client();
 		if(rwMode == 0) {
-			client.readFile("readTest.txt", "Ascii");
+			client.readFile(fileName, "Ascii");
 		}else if (rwMode == 1) {
-			client.writeFile("writeTest.txt", "Ascii");
+			client.writeFile(fileName, "Ascii");
 		}
 
 	}

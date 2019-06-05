@@ -222,6 +222,7 @@ public class ServerWorker extends Thread {
 									break writeLoop;
 								}
 							}
+							tries  = 0;
 							if(mode == 1) {
 								System.out.println(com.verboseMode("Recieved Packet:", RecievedResponse));
 							}
