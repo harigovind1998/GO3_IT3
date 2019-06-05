@@ -22,7 +22,7 @@ Java (using preferably Eclipse IDE)
 	4. Run the Client; Type 1 for verbose and 0 for silent in the console
 	5. Switch each Console Window to show the Client, Intermediate Host, and Server Individually
 	6. View results in External Window (i.e. JFrame)
-    	7. If you want to rerun it, ensure that the only file in ./Client is writeTest.txt and in ./Server is readTest.txt
+	7. If you want to rerun it, ensure that the only file in ./Client is writeTest.txt and in ./Server isreadTest.txt
 
 ### Testing concurrent File transfers
     1. This one needs a little modification from you. Delete all the files that were created from the previous file transfer
