@@ -44,8 +44,8 @@ Java (using preferably Eclipse IDE)
    	5. Server.java; Handles all the in initial incoming requests, then passes the job on to a sperate thread
     	6. ServerExitListener.java; thread that listens for exit command in the console
     	7. ServerWorker.java; Handles the reads and writes
-   	8. ./Client/writeTest.txt; sample file used for wrq
-    	9. ./Server/readTest.txt; sample file used for rrq
+   	8. ./Client/writeTest.txt; sample file used for WRQ
+    	9. ./Server/readTest.txt; sample file used for RRQ
 
 ## Built With
 	* Java
