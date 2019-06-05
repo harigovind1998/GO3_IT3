@@ -23,29 +23,29 @@ Java (using preferably Eclipse IDE)
 	7. If you want to rerun it, ensure that the only file in ./Client is writeTest.txt and in ./Server isreadTest.txt
 
 ### Testing concurrent File transfers
-   	1. This one needs a little modification from you. Delete all the files that were created from the previous file
+	1. This one needs a little modification from you. Delete all the files that were created from the previous file
 	   transfer tests (./Client should only have writeTest.txt and ./Server should only have readText.txt).
-       	2. Start the server, intermediateHost following instructions under Running
+	2. Start the server, intermediateHost following instructions under Running
 	3. Start the client but do not choose the verbose yet
-    	4. Modify the interHostPort in the intermediateHost.java and client.java to another number that not 23 BUT the new port
+	4. Modify the interHostPort in the intermediateHost.java and client.java to another number that not 23 BUT the new port
 	   chosen must both be the same and cannot be 23 or 69
-    	5. Comment out line 242 and uncomment line 244 in Client.java (this will do a concurrent read and write)
-    	6. Start the modified intermediateHost with the changed port and choose verbose or non verbose
-    	7. Start the modified client
-    	8. Get both the client instances to be on seperate consoles and select verbose or non verbose for both
+	5. Comment out line 242 and uncomment line 244 in Client.java (this will do a concurrent read and write)
+	6. Start the modified intermediateHost with the changed port and choose verbose or non verbose
+	7. Start the modified client
+	8. Get both the client instances to be on seperate consoles and select verbose or non verbose for both
 
 ## Files
-    	1. Client.java; Contains the code that controls the client portal 
-    	2. ComFunctions.java; Contains common functions that are shared between the client, server and the
+	1. Client.java; Contains the code that controls the client portal 
+	2. ComFunctions.java; Contains common functions that are shared between the client, server and the
 	   IntermediateHost (i.e. error simulator)
-    	3. delaySimulator.jav; used to delay a target packet my n milliseonds, used in error simulation
-    	4. IntermediateHost.java; Error Simulator, for now it just passed the messages between the serverWorkerThread/Server
+	3. delaySimulator.jav; used to delay a target packet my n milliseonds, used in error simulation
+	4. IntermediateHost.java; Error Simulator, for now it just passed the messages between the serverWorkerThread/Server
 	   and Client
-   	5. Server.java; Handles all the in initial incoming requests, then passes the job on to a sperate thread
-    	6. ServerExitListener.java; thread that listens for exit command in the console
-    	7. ServerWorker.java; Handles the reads and writes
-   	8. ./Client/writeTest.txt; sample file used for WRQ
-    	9. ./Server/readTest.txt; sample file used for RRQ
+	5. Server.java; Handles all the in initial incoming requests, then passes the job on to a sperate thread
+ 	6. ServerExitListener.java; thread that listens for exit command in the console
+ 	7. ServerWorker.java; Handles the reads and writes
+	8. ./Client/writeTest.txt; sample file used for WRQ
+ 	9. ./Server/readTest.txt; sample file used for RRQ
 
 ## Built With
 	* Java
