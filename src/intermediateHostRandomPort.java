@@ -21,10 +21,10 @@ public class intermediateHostRandomPort extends Thread {
 		com.sendPacket(send, clientSend);
 		
 		
-		DatagramPacket clientPacket = com.recievePacket(clientSend, 100);
-		DatagramPacket sendPacket = com.createPacket(clientPacket, serverPort);
+		DatagramPacket clientRecievePacket = com.recievePacket(clientSend, 516);
+		DatagramPacket sendPacket = com.createPacket(clientRecievePacket, serverPort);
 		com.sendPacket(sendPacket, sendSocket);
-		System.out.println("Sending packet to Server  through original Port");
+		System.out.println("Sending packet to Server through original Port");
 		clientSend.close();
 	}
 

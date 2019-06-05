@@ -103,6 +103,16 @@ public class ServerWorker extends Thread {
 								if(mode == 1) {
 									System.out.println(com.verboseMode("Recieved Packet:", RecievedResponse));
 								}
+								
+								if(RecievedResponse.getPort() != interHostPort) {
+									msg = com.generateErrMessage(new byte[] {0,5}, "");
+									SendingResponse= com.createPacket(msg, RecievedResponse.getPort());
+
+									if(mode == 1) {
+										System.out.println(com.verboseMode("Preparing to send Packet to second Server:", SendingResponse));
+									}
+									break innerSend;
+								}
 
 								msg = com.parseForError(RecievedResponse);
 
@@ -118,15 +128,7 @@ public class ServerWorker extends Thread {
 									}
 								}
 
-								if(RecievedResponse.getPort() != interHostPort) {
-									msg = com.generateErrMessage(new byte[] {0,5}, "");
-									SendingResponse= com.createPacket(msg, RecievedResponse.getPort());
-
-									if(mode == 1) {
-										System.out.println(com.verboseMode("Preparing to send Packet to second Server:", SendingResponse));
-									}
-									break innerSend;
-								}
+								
 
 								if(com.getPacketType(RecievedResponse)== 4) {
 									if(com.CheckAck(RecievedResponse, blockNum)){
@@ -140,7 +142,7 @@ public class ServerWorker extends Thread {
 										SendingResponse = com.createPacket(msg, interHostPort);
 										
 										break innerSend;
-									}else if (blockNum < ByteBuffer.wrap(new byte[] {RecievedResponse.getData()[2],RecievedResponse.getData()[3]}).getShort()){
+									}else if (blockNum > ByteBuffer.wrap(new byte[] {RecievedResponse.getData()[2],RecievedResponse.getData()[3]}).getShort()){
 										System.out.println("Duplicate Block received, continue waiting...\n");
 									}else {
 										msg  = com.generateErrMessage(new byte[] {0,4},"");
@@ -224,6 +226,15 @@ public class ServerWorker extends Thread {
 								System.out.println(com.verboseMode("Recieved Packet:", RecievedResponse));
 							}
 							
+							if(RecievedResponse.getPort() != interHostPort) {
+								msg = com.generateErrMessage(new byte[] {0,5}, "");
+								SendingResponse = com.createPacket(msg, RecievedResponse.getPort());
+								if(mode==1) {
+									System.out.println("Packet source TID incorrect");
+								}
+								break mainLoop;
+							}
+							
 							msg = com.parseForError(RecievedResponse);
 							
 							if(msg!= null) {
@@ -236,17 +247,6 @@ public class ServerWorker extends Thread {
 									break writeLoop;
 								}
 							}
-							
-							if(RecievedResponse.getPort() != interHostPort) {
-								msg = com.generateErrMessage(new byte[] {0,5}, "");
-								SendingResponse = com.createPacket(msg, RecievedResponse.getPort());
-								if(mode==1) {
-									System.out.println("Packet source TID incorrect");
-								}
-								break mainLoop;
-							}
-							
-							
 							
 							//Checks to see if the Data Packet received is the correct packet, if it isn't waits for next incoming packet
 							incomingBlock[0] = RecievedResponse.getData()[2];
