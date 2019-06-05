@@ -3,11 +3,9 @@
 Iteration 3
 
 ## Getting Started
-
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
-
 Java (using preferably Eclipse IDE)
 
 ## Running
@@ -25,30 +23,29 @@ Java (using preferably Eclipse IDE)
 	7. If you want to rerun it, ensure that the only file in ./Client is writeTest.txt and in ./Server isreadTest.txt
 
 ### Testing concurrent File transfers
-    1. This one needs a little modification from you. Delete all the files that were created from the previous file transfer
-       tests (./Client should only have writeTest.txt and ./Server should only have readText.txt). 
-    2. Start the server, intermediateHost following instructions under Running
-    3. Start the client but do not choose the verbose yet
-    4. Modify the interHostPort in the intermediateHost.java and client.java to another number that not 23 BUT the new port
-       chosen must both be the same and cannot be 23 or 69
-    5. Comment out line 242 and uncomment line 244 in Client.java (this will do a concurrent read and write)
-    6. Start the modified intermediateHost with the changed port and choose verbose or non verbose
-    7. Start the modified client
-    8. Get both the client instances to be on seperate consoles and select verbose or non verbose for both
+   	1. This one needs a little modification from you. Delete all the files that were created from the previous file
+	   transfer tests (./Client should only have writeTest.txt and ./Server should only have readText.txt).
+       	2. Start the server, intermediateHost following instructions under Running
+	3. Start the client but do not choose the verbose yet
+    	4. Modify the interHostPort in the intermediateHost.java and client.java to another number that not 23 BUT the new port
+	   chosen must both be the same and cannot be 23 or 69
+    	5. Comment out line 242 and uncomment line 244 in Client.java (this will do a concurrent read and write)
+    	6. Start the modified intermediateHost with the changed port and choose verbose or non verbose
+    	7. Start the modified client
+    	8. Get both the client instances to be on seperate consoles and select verbose or non verbose for both
 
 ## Files
-    1. Client.java; Contains the code that controls the client portal 
-    2. ComFunctions.java; Contains common functions that are shared between the client, server and the IntermediateHost(A.K.A
-       error simulator)
-    3. delaySimulator.jav; used to delay a target packet my n milliseonds, used in error simulation
-    3. IntermediateHost.java; Error Simulator, for now it just passed the messages between the serverWorkerThread/Server and
-       client
-    4. Server.java; Handles all the in initial incoming requests, then passes the job on to a sperate thread
-    5. ServerExitListener.java; thread that listens for exit command in the console
-    6. ServerWorker.java; Handles the reads and writes
-
-    7. ./Client/writeTest.txt; sample file used for wrq
-    8. ./Server/readTest.txt; sample file used for rrq
+    	1. Client.java; Contains the code that controls the client portal 
+    	2. ComFunctions.java; Contains common functions that are shared between the client, server and the
+	   IntermediateHost (i.e. error simulator)
+    	3. delaySimulator.jav; used to delay a target packet my n milliseonds, used in error simulation
+    	4. IntermediateHost.java; Error Simulator, for now it just passed the messages between the serverWorkerThread/Server
+	   and Client
+   	5. Server.java; Handles all the in initial incoming requests, then passes the job on to a sperate thread
+    	6. ServerExitListener.java; thread that listens for exit command in the console
+    	7. ServerWorker.java; Handles the reads and writes
+   	8. ./Client/writeTest.txt; sample file used for wrq
+    	9. ./Server/readTest.txt; sample file used for rrq
 
 ## Built With
 	* Java
