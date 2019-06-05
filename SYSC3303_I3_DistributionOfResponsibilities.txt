@@ -20,11 +20,11 @@ Iteration 2:
 Steven -> Transform IntermediateHost to error simulator and simulate the 3 errors along with keeping a normal mode
 Hari -> Tweaked Client and server to be able to handle the 3 type of errors 
 Tarun -> Tweaked Server to handle 2 of 3 types of errors
-Yohannes -> Tweaked Server to handle 1 of 3 types of errors as well as created diagrams 
+Yohannes -> Tweaked Server to handle 1 of 3 types of errors as well as created diagrams
 
 Iteration 3:
 
-Steven -> Idk
-Hari -> The entire thing ;-;
-Tarun -> Created most of the diagrams. Added functionality to specify DATA or ACK packet along with the block number for error simulator
-Yohannes -> Idk
+Steven -> Created parseForError method in ComFunctions to check for error type 4
+Hari -> Tweaked Client and server to be able to detect error type 5
+Tarun -> Created diagrams as well as done testing to help debug
+Yohannes -> Created diagrams as well as validated program satisfies Iteration 3 requirements
