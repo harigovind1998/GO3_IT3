@@ -702,6 +702,8 @@ public class ComFunctions {
 		}
 		
 		modeAsByteArr = new byte[modeLength];
+		//reset count
+		count = 0;
 		
 		//used to append to the byte array when applicable
 		for (int i = 2; i < msg.length; ++i) { 
